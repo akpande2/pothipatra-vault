@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
-import { ChevronLeft, BookOpen, Lock, Info, Globe, Check } from 'lucide-react';
+import { ChevronLeft, BookOpen, Lock, Info, Globe, Check, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Sheet,
@@ -12,6 +12,7 @@ import {
 
 const Settings = () => {
   const { t, language, setLanguage, languages } = useLanguage();
+  const navigate = useNavigate();
   const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
 
   const currentLanguage = languages.find(l => l.code === language);
@@ -63,6 +64,21 @@ const Settings = () => {
             {t.security}
           </h2>
           <div className="space-y-2">
+            <button
+              onClick={() => navigate('/privacy')}
+              className="w-full flex items-center justify-between p-4 rounded-xl bg-card border border-border hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-sm">Privacy & Trust</p>
+                  <p className="text-xs text-muted-foreground">How we protect your data</p>
+                </div>
+              </div>
+              <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180" />
+            </button>
             <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
