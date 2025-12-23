@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronRight, Camera, X } from 'lucide-react';
+import { ChevronRight, Camera, X, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AddDocumentSheetProps {
@@ -54,8 +54,8 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
   const handleSubmit = () => {
     if (!selectedType || !formData.number || !formData.holderName) {
       toast({
-        title: 'Missing information',
-        description: 'Please fill in all required fields',
+        title: 'जानकारी अधूरी है',
+        description: 'कृपया सभी आवश्यक जानकारी भरें',
         variant: 'destructive',
       });
       return;
@@ -118,15 +118,15 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl">
+      <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-left">
-            {step === 'type' ? 'Select Document Type' : `Add ${selectedType ? DOCUMENT_TYPES[selectedType].label : ''}`}
+          <SheetTitle className="text-left text-base">
+            {step === 'type' ? 'दस्तावेज़ का प्रकार चुनें' : `${selectedType ? DOCUMENT_TYPES[selectedType].labelHi : ''} जोड़ें`}
           </SheetTitle>
         </SheetHeader>
 
         {step === 'type' ? (
-          <div className="grid grid-cols-2 gap-3 stagger-children">
+          <div className="grid grid-cols-1 gap-2 stagger-children">
             {(Object.entries(DOCUMENT_TYPES) as [DocumentType, typeof DOCUMENT_TYPES[DocumentType]][]).map(
               ([type, info]) => (
                 <button
@@ -134,13 +134,14 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                   onClick={() => handleTypeSelect(type)}
                   className={cn(
                     'flex items-center gap-3 p-4 rounded-xl border border-border',
-                    'hover:border-accent hover:bg-accent/5 transition-all duration-200',
+                    'hover:border-accent/50 hover:bg-accent/5 transition-all duration-200',
                     'text-left group'
                   )}
                 >
                   <span className="text-2xl">{info.icon}</span>
                   <div className="flex-1">
                     <p className="font-medium text-sm">{info.label}</p>
+                    <p className="text-xs text-muted-foreground">{info.labelHi}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors" />
                 </button>
@@ -151,10 +152,10 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
           <div className="space-y-5 animate-fade-in">
             {/* Document Number */}
             <div className="space-y-2">
-              <Label htmlFor="number">Document Number *</Label>
+              <Label htmlFor="number">दस्तावेज़ संख्या *</Label>
               <Input
                 id="number"
-                placeholder="Enter document number"
+                placeholder="दस्तावेज़ नंबर दर्ज करें"
                 value={formData.number}
                 onChange={(e) => setFormData(prev => ({ ...prev, number: e.target.value }))}
               />
@@ -162,10 +163,10 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
 
             {/* Holder Name */}
             <div className="space-y-2">
-              <Label htmlFor="holderName">Name on Document *</Label>
+              <Label htmlFor="holderName">दस्तावेज़ पर नाम *</Label>
               <Input
                 id="holderName"
-                placeholder="Enter name as on document"
+                placeholder="जैसा दस्तावेज़ पर लिखा है"
                 value={formData.holderName}
                 onChange={(e) => setFormData(prev => ({ ...prev, holderName: e.target.value }))}
               />
@@ -174,7 +175,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
             {/* Dates */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="issueDate">Issue Date</Label>
+                <Label htmlFor="issueDate">जारी करने की तिथि</Label>
                 <Input
                   id="issueDate"
                   type="date"
@@ -183,7 +184,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="expiryDate">Expiry Date</Label>
+                <Label htmlFor="expiryDate">समाप्ति तिथि</Label>
                 <Input
                   id="expiryDate"
                   type="date"
@@ -195,15 +196,15 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
 
             {/* Image Uploads */}
             <div className="space-y-2">
-              <Label>Document Images (Optional)</Label>
+              <Label>दस्तावेज़ की फोटो (वैकल्पिक)</Label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => handleImageUpload('frontImage')}
                   className={cn(
                     'aspect-[3/2] rounded-xl border-2 border-dashed border-border',
-                    'flex flex-col items-center justify-center gap-2',
-                    'hover:border-accent hover:bg-accent/5 transition-all',
+                    'flex flex-col items-center justify-center gap-1.5',
+                    'hover:border-accent/50 hover:bg-accent/5 transition-all',
                     'relative overflow-hidden'
                   )}
                 >
@@ -220,6 +221,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                           setFormData(prev => ({ ...prev, frontImage: '' }));
                         }}
                         className="absolute top-1 right-1 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                        aria-label="Remove image"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -227,7 +229,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                   ) : (
                     <>
                       <Camera className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">Front</span>
+                      <span className="text-xs text-muted-foreground">सामने</span>
                     </>
                   )}
                 </button>
@@ -236,8 +238,8 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                   onClick={() => handleImageUpload('backImage')}
                   className={cn(
                     'aspect-[3/2] rounded-xl border-2 border-dashed border-border',
-                    'flex flex-col items-center justify-center gap-2',
-                    'hover:border-accent hover:bg-accent/5 transition-all',
+                    'flex flex-col items-center justify-center gap-1.5',
+                    'hover:border-accent/50 hover:bg-accent/5 transition-all',
                     'relative overflow-hidden'
                   )}
                 >
@@ -254,6 +256,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                           setFormData(prev => ({ ...prev, backImage: '' }));
                         }}
                         className="absolute top-1 right-1 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                        aria-label="Remove image"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -261,7 +264,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                   ) : (
                     <>
                       <Camera className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">Back</span>
+                      <span className="text-xs text-muted-foreground">पीछे</span>
                     </>
                   )}
                 </button>
@@ -270,11 +273,12 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">
-              <Button variant="outline" className="flex-1" onClick={() => setStep('type')}>
-                Back
+              <Button variant="outline" className="flex-1 gap-2" onClick={() => setStep('type')}>
+                <ArrowLeft className="w-4 h-4" />
+                वापस
               </Button>
               <Button className="flex-1" onClick={handleSubmit}>
-                Save Document
+                सहेजें
               </Button>
             </div>
           </div>

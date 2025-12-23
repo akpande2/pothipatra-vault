@@ -13,11 +13,11 @@ export function FloatingAddButton({ onClick }: FloatingAddButtonProps) {
         'fixed bottom-6 right-6 z-40',
         'w-14 h-14 rounded-full',
         'bg-accent text-accent-foreground',
-        'shadow-deep hover:shadow-lg',
+        'shadow-elevated',
         'flex items-center justify-center',
-        'transition-all duration-300 hover:scale-105 active:scale-95'
+        'transition-all duration-200 hover:shadow-deep active:scale-95'
       )}
-      aria-label="Add document"
+      aria-label="दस्तावेज़ जोड़ें"
     >
       <Plus className="w-6 h-6" />
     </button>

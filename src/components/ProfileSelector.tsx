@@ -1,6 +1,6 @@
 import { Profile, RELATIONS } from '@/types/document';
 import { cn } from '@/lib/utils';
-import { Plus, User } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface ProfileSelectorProps {
@@ -28,27 +28,30 @@ export function ProfileSelector({
   };
 
   const getRelationLabel = (relation: Profile['relation']) => {
-    return RELATIONS.find((r) => r.value === relation)?.label || relation;
+    const rel = RELATIONS.find((r) => r.value === relation);
+    return rel?.label || relation;
   };
 
   return (
-    <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
       {profiles.map((profile) => (
         <button
           key={profile.id}
           onClick={() => onSelect(profile.id)}
           className={cn(
-            'flex flex-col items-center gap-1.5 min-w-[72px] p-2 rounded-xl transition-all duration-200',
+            'flex flex-col items-center gap-1.5 min-w-[68px] p-2 rounded-xl transition-all duration-200',
             activeProfileId === profile.id
-              ? 'bg-primary/10'
+              ? 'bg-accent/10'
               : 'hover:bg-muted'
           )}
+          aria-label={`Select ${profile.name}`}
+          aria-pressed={activeProfileId === profile.id}
         >
           <Avatar
             className={cn(
-              'w-12 h-12 border-2 transition-all duration-200',
+              'w-11 h-11 border-2 transition-all duration-200',
               activeProfileId === profile.id
-                ? 'border-accent shadow-md'
+                ? 'border-accent'
                 : 'border-transparent'
             )}
           >
@@ -66,7 +69,7 @@ export function ProfileSelector({
           <div className="text-center">
             <p
               className={cn(
-                'text-xs font-medium truncate max-w-[64px]',
+                'text-xs font-medium truncate max-w-[60px]',
                 activeProfileId === profile.id
                   ? 'text-foreground'
                   : 'text-muted-foreground'
@@ -84,12 +87,13 @@ export function ProfileSelector({
       {canAddMore && (
         <button
           onClick={onAddProfile}
-          className="flex flex-col items-center gap-1.5 min-w-[72px] p-2 rounded-xl hover:bg-muted transition-colors"
+          className="flex flex-col items-center gap-1.5 min-w-[68px] p-2 rounded-xl hover:bg-muted transition-colors"
+          aria-label="Add family member"
         >
-          <div className="w-12 h-12 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-            <Plus className="w-5 h-5 text-muted-foreground" />
+          <div className="w-11 h-11 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+            <Plus className="w-4 h-4 text-muted-foreground" />
           </div>
-          <p className="text-xs text-muted-foreground">Add</p>
+          <p className="text-[10px] text-muted-foreground">Add</p>
         </button>
       )}
     </div>
