@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
-import { ChevronLeft, BookOpen, Lock, Info, Globe, Check, Shield } from 'lucide-react';
+import { ChevronLeft, BookOpen, Lock, Info, Globe, Check, Shield, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Sheet,
@@ -75,6 +75,21 @@ const Settings = () => {
                 <div className="text-left">
                   <p className="font-medium text-sm">Privacy & Trust</p>
                   <p className="text-xs text-muted-foreground">How we protect your data</p>
+                </div>
+              </div>
+              <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180" />
+            </button>
+            <button
+              onClick={() => navigate('/notifications')}
+              className="w-full flex items-center justify-between p-4 rounded-xl bg-card border border-border hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <Bell className="w-5 h-5 text-amber-500" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-sm">Notifications</p>
+                  <p className="text-xs text-muted-foreground">Manage reminders & alerts</p>
                 </div>
               </div>
               <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180" />
