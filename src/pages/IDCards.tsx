@@ -4,7 +4,6 @@ import { useStore } from '@/hooks/useStore';
 import { AppLayout } from '@/components/AppLayout';
 import { DocumentCard } from '@/components/DocumentCard';
 import { DocumentDetailSheet } from '@/components/DocumentDetailSheet';
-import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, FolderOpen, FileText, Users, ChevronRight } from 'lucide-react';
@@ -32,7 +31,6 @@ export default function IDCards() {
   // Document actions state
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   // Filter documents based on search query
   const filteredDocuments = useMemo(() => {
@@ -114,15 +112,7 @@ export default function IDCards() {
 
   const handleDeleteDocument = (doc: Document) => {
     setSelectedDocument(doc);
-    setIsDeleteOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (selectedDocument) {
-      deleteDocument(selectedDocument.id);
-      setIsDeleteOpen(false);
-      setSelectedDocument(null);
-    }
+    setIsDetailOpen(true);
   };
 
   if (isLoading) {
@@ -314,18 +304,13 @@ export default function IDCards() {
         document={selectedDocument}
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <DeleteConfirmDialog
-        open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        onConfirm={confirmDelete}
-        title={language === 'hi' ? 'दस्तावेज़ हटाएं?' : 'Delete Document?'}
-        description={language === 'hi' 
-          ? `क्या आप "${selectedDocument?.name || ''}" को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।`
-          : `Are you sure you want to delete "${selectedDocument?.name || ''}"? This action cannot be undone.`
-        }
+        onRename={(id, newName) => {
+          updateDocument(id, { name: newName });
+        }}
+        onDelete={(id) => {
+          deleteDocument(id);
+          setSelectedDocument(null);
+        }}
       />
     </AppLayout>
   );
