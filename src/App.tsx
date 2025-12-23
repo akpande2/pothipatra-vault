@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import IDCards from "./pages/IDCards";
 import UploadID from "./pages/UploadID";
 import ChatHistory from "./pages/ChatHistory";
+import ChatConversation from "./pages/ChatConversation";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/id-cards" element={<IDCards />} />
             <Route path="/upload" element={<UploadID />} />
             <Route path="/chat-history" element={<ChatHistory />} />
+            <Route path="/chat/:id" element={<ChatConversation />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

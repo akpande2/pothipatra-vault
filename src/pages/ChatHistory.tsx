@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { AppLayout } from '@/components/AppLayout';
 import { Search, MessageSquare, ChevronRight } from 'lucide-react';
@@ -47,6 +48,7 @@ const mockSessions: ChatSession[] = [
 
 export default function ChatHistory() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter sessions based on search (UI only)
@@ -105,6 +107,7 @@ export default function ChatHistory() {
                       {sessions.map((session) => (
                         <button
                           key={session.id}
+                          onClick={() => navigate(`/chat/${session.id}`)}
                           className="w-full flex items-center gap-3 p-3 rounded-xl bg-card hover:bg-muted/50 border border-border/50 transition-colors text-left group"
                         >
                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
