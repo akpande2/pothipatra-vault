@@ -290,8 +290,6 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
               <Button variant="outline" className="flex-1 gap-2" onClick={() => setStep('type')}>
                 <ArrowLeft className="w-4 h-4" />
                 {t.goBack}
-                <ArrowLeft className="w-4 h-4" />
-                {t.back}
               </Button>
               <Button className="flex-1" onClick={handleSubmit}>
                 {t.save}

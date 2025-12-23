@@ -13,7 +13,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const STORAGE_KEY = 'pothipatra_language';
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<LanguageCode>('hi');
+  const [language, setLanguageState] = useState<LanguageCode>('en');
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as LanguageCode | null;
