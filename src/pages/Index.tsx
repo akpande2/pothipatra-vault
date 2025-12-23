@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { Header } from '@/components/Header';
-import { ProfileSelector } from '@/components/ProfileSelector';
 import { DocumentCard } from '@/components/DocumentCard';
 import { EmptyState } from '@/components/EmptyState';
 import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { AddDocumentSheet } from '@/components/AddDocumentSheet';
-import { AddProfileSheet } from '@/components/AddProfileSheet';
 import { DocumentDetailSheet } from '@/components/DocumentDetailSheet';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { useStore } from '@/hooks/useStore';
@@ -18,19 +16,13 @@ import { Input } from '@/components/ui/input';
 const Index = () => {
   const { t } = useLanguage();
   const {
-    profiles,
-    activeProfile,
-    activeProfileId,
-    activeDocuments,
-    setActiveProfileId,
-    addProfile,
+    documents,
     addDocument,
     deleteDocument,
     isLoading,
   } = useStore();
 
   const [addDocumentOpen, setAddDocumentOpen] = useState(false);
-  const [addProfileOpen, setAddProfileOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -38,7 +30,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
-  const filteredDocuments = activeDocuments.filter(doc =>
+  const filteredDocuments = documents.filter(doc =>
     doc.holderName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     doc.number.toLowerCase().includes(searchQuery.toLowerCase()) ||
     doc.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -54,31 +46,11 @@ const Index = () => {
     frontImage?: string;
     backImage?: string;
   }) => {
-    addDocument({
-      ...data,
-      profileId: activeProfileId,
-    });
+    addDocument(data);
     toast({
       title: t.documentSaved,
       description: `${data.name}`,
     });
-  };
-
-  const handleAddProfile = (data: { name: string; relation: 'self' | 'spouse' | 'child' | 'parent' | 'other' }) => {
-    try {
-      const newProfile = addProfile(data);
-      setActiveProfileId(newProfile.id);
-      toast({
-        title: t.memberAdded,
-        description: `${data.name} ${t.profileReady}`,
-      });
-    } catch (error) {
-      toast({
-        title: t.cannotDelete,
-        description: t.maxMembersReached,
-        variant: 'destructive',
-      });
-    }
   };
 
   const handleViewDocument = (document: Document) => {
@@ -119,20 +91,8 @@ const Index = () => {
       <Header />
 
       <main className="px-5 py-4">
-        {/* Profile Selector */}
-        <section className="mb-5">
-          <p className="text-xs text-muted-foreground mb-2">{t.familyMembers}</p>
-          <ProfileSelector
-            profiles={profiles}
-            activeProfileId={activeProfileId}
-            onSelect={setActiveProfileId}
-            onAddProfile={() => setAddProfileOpen(true)}
-            canAddMore={profiles.length < 4}
-          />
-        </section>
-
         {/* Search */}
-        {activeDocuments.length > 0 && (
+        {documents.length > 0 && (
           <section className="mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -147,10 +107,10 @@ const Index = () => {
         )}
 
         {/* Document Count */}
-        {activeDocuments.length > 0 && (
+        {documents.length > 0 && (
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm text-muted-foreground">
-              {activeProfile?.name} - {t.documents}
+              {t.documents}
             </h2>
             <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
               {filteredDocuments.length} {t.document}
@@ -171,7 +131,7 @@ const Index = () => {
               />
             ))}
           </div>
-        ) : activeDocuments.length === 0 ? (
+        ) : documents.length === 0 ? (
           <EmptyState onAddDocument={() => setAddDocumentOpen(true)} />
         ) : (
           <div className="text-center py-12">
@@ -188,12 +148,6 @@ const Index = () => {
         open={addDocumentOpen}
         onOpenChange={setAddDocumentOpen}
         onSubmit={handleAddDocument}
-      />
-
-      <AddProfileSheet
-        open={addProfileOpen}
-        onOpenChange={setAddProfileOpen}
-        onSubmit={handleAddProfile}
       />
 
       <DocumentDetailSheet

@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useStore } from '@/hooks/useStore';
-import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
-import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
-import { Profile } from '@/types/document';
-import { ChevronLeft, Users, Trash2, BookOpen, Lock, Info, Globe, Check } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ChevronLeft, BookOpen, Lock, Info, Globe, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Sheet,
@@ -17,49 +12,7 @@ import {
 
 const Settings = () => {
   const { t, language, setLanguage, languages } = useLanguage();
-  const { profiles, deleteProfile } = useStore();
-  const [profileToDelete, setProfileToDelete] = useState<Profile | null>(null);
   const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
-  const { toast } = useToast();
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const getRelationLabel = (relation: Profile['relation']) => {
-    const labels: Record<string, string> = {
-      self: t.self,
-      spouse: t.spouse,
-      child: t.child,
-      parent: t.parent,
-      other: t.other,
-    };
-    return labels[relation] || relation;
-  };
-
-  const handleDeleteProfile = () => {
-    if (profileToDelete) {
-      try {
-        deleteProfile(profileToDelete.id);
-        toast({
-          title: t.memberDeleted,
-          description: profileToDelete.name,
-        });
-      } catch {
-        toast({
-          title: t.cannotDelete,
-          description: t.atLeastOneMember,
-          variant: 'destructive',
-        });
-      }
-      setProfileToDelete(null);
-    }
-  };
 
   const currentLanguage = languages.find(l => l.code === language);
 
@@ -101,48 +54,6 @@ const Settings = () => {
             </div>
             <ChevronLeft className="w-4 h-4 text-muted-foreground rotate-180" />
           </button>
-        </section>
-
-        {/* Profiles Section */}
-        <section>
-          <h2 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2 uppercase tracking-wide">
-            <Users className="w-4 h-4" />
-            {t.familyMembers}
-          </h2>
-          <div className="space-y-2">
-            {profiles.map((profile) => (
-              <div
-                key={profile.id}
-                className="flex items-center justify-between p-4 rounded-xl bg-card border border-border"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarFallback className="bg-muted text-muted-foreground text-sm">
-                      {getInitials(profile.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-sm">{profile.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {getRelationLabel(profile.relation)}
-                    </p>
-                  </div>
-                </div>
-                {profiles.length > 1 && (
-                  <button
-                    onClick={() => setProfileToDelete(profile)}
-                    className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-destructive/10 transition-colors"
-                    aria-label={`${t.delete} ${profile.name}`}
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            {4 - profiles.length} {t.slotsRemaining}
-          </p>
         </section>
 
         {/* Security Section */}
@@ -222,14 +133,6 @@ const Settings = () => {
           </div>
         </SheetContent>
       </Sheet>
-
-      <DeleteConfirmDialog
-        open={!!profileToDelete}
-        onOpenChange={(open) => !open && setProfileToDelete(null)}
-        onConfirm={handleDeleteProfile}
-        title={t.deleteMember}
-        description={`${profileToDelete?.name} - ${t.deleteMemberConfirm}`}
-      />
     </div>
   );
 };
