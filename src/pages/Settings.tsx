@@ -50,15 +50,15 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
-        <div className="flex items-center gap-3 px-5 py-4">
-          <Link
-            to="/dashboard"
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted transition-colors -ml-2"
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="h-14 flex items-center gap-3 px-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
             aria-label={t.goBack}
           >
             <ChevronLeft className="w-5 h-5" />
-          </Link>
+          </button>
           <h1 className="text-lg font-semibold">{t.settings}</h1>
         </div>
       </header>
