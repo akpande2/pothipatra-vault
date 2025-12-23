@@ -6,6 +6,7 @@ import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { AddDocumentSheet } from '@/components/AddDocumentSheet';
 import { DocumentDetailSheet } from '@/components/DocumentDetailSheet';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { showSuccessToast } from '@/components/SuccessToast';
 import { useStore } from '@/hooks/useStore';
 import { Document, DocumentType, RelationType } from '@/types/document';
 import { useToast } from '@/hooks/use-toast';
@@ -61,9 +62,9 @@ const Index = () => {
     backImage?: string;
   }) => {
     addDocument(data);
-    toast({
-      title: t.documentSaved,
-      description: `${data.name}`,
+    showSuccessToast({
+      title: language === 'hi' ? 'दस्तावेज़ सहेजा गया' : 'Document saved successfully',
+      description: data.name,
     });
   };
 
