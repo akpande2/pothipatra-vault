@@ -1,6 +1,6 @@
 import { Document, DOCUMENT_TYPES, KnownPerson, RELATIONS } from '@/types/document';
 import { cn } from '@/lib/utils';
-import { MoreVertical, Eye, Calendar } from 'lucide-react';
+import { MoreVertical, Eye, Calendar, Clock } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useLanguage } from '@/hooks/useLanguage';
 import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
 interface DocumentCardProps {
   document: Document;
@@ -41,13 +42,29 @@ export function DocumentCard({ document, onView, onEdit, onDelete, knownPerson }
     }
   };
 
+  // Check if document is expiring soon (within 90 days) or expired
+  const getExpiryStatus = () => {
+    if (!document.expiryDate) return null;
+    
+    const expiry = new Date(document.expiryDate);
+    const now = new Date();
+    const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysUntilExpiry < 0) return 'expired';
+    if (daysUntilExpiry <= 90) return 'expiring';
+    return null;
+  };
+
+  const expiryStatus = getExpiryStatus();
   const relationLabel = getRelationLabel();
 
   return (
     <div
       className={cn(
         'flex items-center gap-3 p-3 rounded-xl bg-background border border-border',
-        'hover:border-primary/30 hover:bg-muted/30 transition-colors cursor-pointer'
+        'hover:border-primary/30 hover:bg-muted/30 transition-colors cursor-pointer',
+        expiryStatus === 'expiring' && 'bg-amber-500/5 border-amber-500/20 hover:border-amber-500/40',
+        expiryStatus === 'expired' && 'bg-destructive/5 border-destructive/20 hover:border-destructive/40'
       )}
       onClick={() => onView(document)}
       role="button"
@@ -64,7 +81,7 @@ export function DocumentCard({ document, onView, onEdit, onDelete, knownPerson }
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <p className="font-medium text-foreground text-sm truncate">
             {getDocLabel()}
           </p>
@@ -72,6 +89,17 @@ export function DocumentCard({ document, onView, onEdit, onDelete, knownPerson }
             <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">
               {relationLabel}
             </span>
+          )}
+          {expiryStatus === 'expiring' && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-amber-500/10 text-amber-600 border-amber-500/30 gap-1">
+              <Clock className="w-3 h-3" />
+              Expiring Soon
+            </Badge>
+          )}
+          {expiryStatus === 'expired' && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-destructive/10 text-destructive border-destructive/30">
+              Expired
+            </Badge>
           )}
         </div>
         <p className="text-sm text-muted-foreground truncate">
