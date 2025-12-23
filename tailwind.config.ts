@@ -63,13 +63,9 @@ export default {
           DEFAULT: "hsl(var(--ink))",
           light: "hsl(var(--ink-light))",
         },
-        saffron: {
-          DEFAULT: "hsl(var(--saffron))",
-          light: "hsl(var(--saffron-light))",
-        },
-        earth: {
-          DEFAULT: "hsl(var(--earth))",
-          light: "hsl(var(--earth-light))",
+        slate: {
+          DEFAULT: "hsl(var(--slate))",
+          light: "hsl(var(--slate-light))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
