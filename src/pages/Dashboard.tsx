@@ -61,7 +61,7 @@ export default function Dashboard() {
                   ? "I found multiple documents."
                   : hasAadhaar 
                     ? "Here's the Aadhaar card I found:" 
-                    : "I don't see this document yet. You can upload it using the Documents section.",
+                    : "I don't see this document yet. You can upload it.",
                 documents: hasAll
                   ? [
                       { documentType: "Aadhaar Card", personName: "Rahul Sharma" },
