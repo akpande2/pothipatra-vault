@@ -1,7 +1,10 @@
 import { BookOpen, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export function Header() {
+  const { t } = useLanguage();
+
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
       <div className="flex items-center justify-between px-5 py-4">
@@ -11,17 +14,17 @@ export function Header() {
           </div>
           <div>
             <h1 className="text-lg font-semibold text-foreground tracking-tight">
-              PothiPatra
+              {t.appName}
             </h1>
             <p className="text-xs text-muted-foreground">
-              आपकी दस्तावेज़ डायरी
+              {t.appTagline}
             </p>
           </div>
         </div>
         <Link
           to="/settings"
           className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
-          aria-label="Settings"
+          aria-label={t.settings}
         >
           <Settings className="w-5 h-5 text-muted-foreground" />
         </Link>

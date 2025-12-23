@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface DocumentCardProps {
   document: Document;
@@ -16,7 +17,21 @@ interface DocumentCardProps {
 }
 
 export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCardProps) {
+  const { t, language } = useLanguage();
   const docType = DOCUMENT_TYPES[document.type];
+
+  const getDocLabel = () => {
+    const labels: Record<string, string> = {
+      aadhaar: t.aadhaarCard,
+      pan: t.panCard,
+      passport: t.passport,
+      driving: t.drivingLicence,
+      voter: t.voterId,
+      ration: t.rationCard,
+      other: t.otherDocument,
+    };
+    return labels[document.type] || docType.label;
+  };
 
   return (
     <div
@@ -29,16 +44,13 @@ export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCar
       onClick={() => onView(document)}
       role="button"
       tabIndex={0}
-      aria-label={`View ${docType.label}`}
+      aria-label={`${t.viewDetails} ${getDocLabel()}`}
     >
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xl">{docType.icon}</span>
-          <div>
-            <span className="text-sm font-medium opacity-95">{docType.label}</span>
-            <p className="text-xs opacity-70">{docType.labelHi}</p>
-          </div>
+          <span className="text-sm font-medium opacity-95">{getDocLabel()}</span>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -48,19 +60,19 @@ export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCar
           >
             <MoreVertical className="w-4 h-4" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="bg-popover">
             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView(document); }}>
               <Eye className="w-4 h-4 mr-2" />
-              View Details
+              {t.viewDetails}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(document); }}>
-              Edit
+              {t.edit}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => { e.stopPropagation(); onDelete(document); }}
               className="text-destructive focus:text-destructive"
             >
-              Delete
+              {t.delete}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
