@@ -32,31 +32,22 @@ export const LANGUAGES: Language[] = [
 ];
 
 export interface Translations {
-  // App
   appName: string;
   appTagline: string;
   appDescription: string;
   version: string;
-
-  // Navigation
   settings: string;
   goBack: string;
-
-  // Family
   familyMembers: string;
   addFamilyMember: string;
   slotsRemaining: string;
   maxMembersReached: string;
-
-  // Relations
   self: string;
   spouse: string;
   child: string;
   parent: string;
   other: string;
   relation: string;
-
-  // Documents
   documents: string;
   document: string;
   noDocuments: string;
@@ -71,8 +62,6 @@ export interface Translations {
   viewDetails: string;
   edit: string;
   delete: string;
-
-  // Document Types
   aadhaarCard: string;
   panCard: string;
   passport: string;
@@ -81,8 +70,6 @@ export interface Translations {
   rationCard: string;
   otherDocument: string;
   selectDocumentType: string;
-
-  // Form Fields
   documentNumber: string;
   enterDocumentNumber: string;
   nameOnDocument: string;
@@ -98,13 +85,9 @@ export interface Translations {
   add: string;
   name: string;
   enterName: string;
-
-  // Details
   details: string;
   addedOn: string;
   documentPhotos: string;
-
-  // Profile
   memberAdded: string;
   memberDeleted: string;
   deleteMember: string;
@@ -112,21 +95,13 @@ export interface Translations {
   cannotDelete: string;
   atLeastOneMember: string;
   profileReady: string;
-
-  // Security
   security: string;
   appLock: string;
   comingSoon: string;
-
-  // About
   about: string;
   information: string;
-
-  // Language
   language: string;
   selectLanguage: string;
-
-  // Errors
   incompleteInfo: string;
   fillRequiredFields: string;
   nameRequired: string;
@@ -140,7 +115,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'Your personal document diary. Keep your important ID cards and documents safe, organized, and always accessible.',
     version: 'Version 1.0.0 Beta',
     settings: 'Settings',
-    back: 'Back',
+    goBack: 'Back',
     familyMembers: 'Family Members',
     addFamilyMember: 'Add Family Member',
     slotsRemaining: 'more members can be added',
@@ -181,7 +156,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'Expiry Date',
     documentImages: 'Document Images',
     front: 'Front',
-    back: 'Back',
+    backSide: 'Back',
     optional: 'optional',
     save: 'Save',
     cancel: 'Cancel',
@@ -216,7 +191,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'आपकी व्यक्तिगत दस्तावेज़ डायरी। अपने महत्वपूर्ण पहचान पत्र और दस्तावेज़ों को सुरक्षित, व्यवस्थित और हमेशा अपनी पहुंच में रखें।',
     version: 'संस्करण 1.0.0 Beta',
     settings: 'सेटिंग्स',
-    back: 'वापस',
+    goBack: 'वापस',
     familyMembers: 'परिवार के सदस्य',
     addFamilyMember: 'परिवार का सदस्य जोड़ें',
     slotsRemaining: 'और सदस्य जोड़ सकते हैं',
@@ -257,7 +232,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'समाप्ति तिथि',
     documentImages: 'दस्तावेज़ की फोटो',
     front: 'सामने',
-    back: 'पीछे',
+    backSide: 'पीछे',
     optional: 'वैकल्पिक',
     save: 'सहेजें',
     cancel: 'रद्द करें',
@@ -292,7 +267,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'আপনার ব্যক্তিগত নথি ডায়েরি। আপনার গুরুত্বপূর্ণ পরিচয়পত্র এবং নথি নিরাপদ, সুসংগঠিত এবং সর্বদা সহজলভ্য রাখুন।',
     version: 'সংস্করণ 1.0.0 Beta',
     settings: 'সেটিংস',
-    back: 'পিছনে',
+    goBack: 'পিছনে',
     familyMembers: 'পরিবারের সদস্য',
     addFamilyMember: 'পরিবারের সদস্য যোগ করুন',
     slotsRemaining: 'আরও সদস্য যোগ করা যাবে',
@@ -333,7 +308,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'মেয়াদ শেষ তারিখ',
     documentImages: 'নথির ছবি',
     front: 'সামনে',
-    back: 'পিছনে',
+    backSide: 'পিছনে',
     optional: 'ঐচ্ছিক',
     save: 'সংরক্ষণ করুন',
     cancel: 'বাতিল',
@@ -368,7 +343,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'మీ వ్యక్తిగత పత్రాల డైరీ. మీ ముఖ్యమైన గుర్తింపు కార్డులు మరియు పత్రాలను సురక్షితంగా, క్రమబద్ధంగా మరియు ఎల్లప్పుడూ అందుబాటులో ఉంచండి.',
     version: 'వెర్షన్ 1.0.0 Beta',
     settings: 'సెట్టింగ్‌లు',
-    back: 'వెనుకకు',
+    goBack: 'వెనుకకు',
     familyMembers: 'కుటుంబ సభ్యులు',
     addFamilyMember: 'కుటుంబ సభ్యుని జోడించండి',
     slotsRemaining: 'మరిన్ని సభ్యులను జోడించవచ్చు',
@@ -409,7 +384,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'గడువు తేదీ',
     documentImages: 'పత్రం చిత్రాలు',
     front: 'ముందు',
-    back: 'వెనుక',
+    backSide: 'వెనుక',
     optional: 'ఐచ్ఛికం',
     save: 'సేవ్ చేయండి',
     cancel: 'రద్దు చేయండి',
@@ -444,7 +419,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'तुमची वैयक्तिक कागदपत्र डायरी. तुमची महत्त्वाची ओळखपत्रे आणि कागदपत्रे सुरक्षित, व्यवस्थित आणि नेहमी उपलब्ध ठेवा.',
     version: 'आवृत्ती 1.0.0 Beta',
     settings: 'सेटिंग्ज',
-    back: 'मागे',
+    goBack: 'मागे',
     familyMembers: 'कुटुंबातील सदस्य',
     addFamilyMember: 'कुटुंबातील सदस्य जोडा',
     slotsRemaining: 'अधिक सदस्य जोडू शकता',
@@ -485,7 +460,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'समाप्ती तारीख',
     documentImages: 'कागदपत्राचे फोटो',
     front: 'समोर',
-    back: 'मागे',
+    backSide: 'मागे',
     optional: 'पर्यायी',
     save: 'जतन करा',
     cancel: 'रद्द करा',
@@ -520,7 +495,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'உங்கள் தனிப்பட்ட ஆவண நாட்குறிப்பு. உங்கள் முக்கியமான அடையாள அட்டைகள் மற்றும் ஆவணங்களை பாதுகாப்பாக, ஒழுங்காக மற்றும் எப்போதும் அணுகக்கூடியதாக வைத்திருங்கள்.',
     version: 'பதிப்பு 1.0.0 Beta',
     settings: 'அமைப்புகள்',
-    back: 'பின்செல்',
+    goBack: 'பின்செல்',
     familyMembers: 'குடும்ப உறுப்பினர்கள்',
     addFamilyMember: 'குடும்ப உறுப்பினரைச் சேர்க்க',
     slotsRemaining: 'மேலும் உறுப்பினர்களைச் சேர்க்கலாம்',
@@ -561,7 +536,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'காலாவதி தேதி',
     documentImages: 'ஆவண படங்கள்',
     front: 'முன்',
-    back: 'பின்',
+    backSide: 'பின்',
     optional: 'விருப்பமானது',
     save: 'சேமி',
     cancel: 'ரத்து செய்',
@@ -596,7 +571,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'તમારી વ્યક્તિગત દસ્તાવેજ ડાયરી. તમારા મહત્વપૂર્ણ ઓળખપત્રો અને દસ્તાવેજોને સુરક્ષિત, વ્યવસ્થિત અને હંમેશા સુલભ રાખો.',
     version: 'આવૃત્તિ 1.0.0 Beta',
     settings: 'સેટિંગ્સ',
-    back: 'પાછળ',
+    goBack: 'પાછળ',
     familyMembers: 'કુટુંબના સભ્યો',
     addFamilyMember: 'કુટુંબના સભ્ય ઉમેરો',
     slotsRemaining: 'વધુ સભ્યો ઉમેરી શકાય',
@@ -637,7 +612,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'સમાપ્તિ તારીખ',
     documentImages: 'દસ્તાવેજના ફોટા',
     front: 'આગળ',
-    back: 'પાછળ',
+    backSide: 'પાછળ',
     optional: 'વૈકલ્પિક',
     save: 'સાચવો',
     cancel: 'રદ કરો',
@@ -672,7 +647,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ದಾಖಲೆ ಡೈರಿ. ನಿಮ್ಮ ಪ್ರಮುಖ ಗುರುತಿನ ಚೀಟಿಗಳು ಮತ್ತು ದಾಖಲೆಗಳನ್ನು ಸುರಕ್ಷಿತವಾಗಿ, ಸಂಘಟಿತವಾಗಿ ಮತ್ತು ಯಾವಾಗಲೂ ಲಭ್ಯವಾಗುವಂತೆ ಇರಿಸಿ.',
     version: 'ಆವೃತ್ತಿ 1.0.0 Beta',
     settings: 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
-    back: 'ಹಿಂದೆ',
+    goBack: 'ಹಿಂದೆ',
     familyMembers: 'ಕುಟುಂಬ ಸದಸ್ಯರು',
     addFamilyMember: 'ಕುಟುಂಬ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ',
     slotsRemaining: 'ಹೆಚ್ಚು ಸದಸ್ಯರನ್ನು ಸೇರಿಸಬಹುದು',
@@ -713,7 +688,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'ಅವಧಿ ಮುಕ್ತಾಯ ದಿನಾಂಕ',
     documentImages: 'ದಾಖಲೆ ಚಿತ್ರಗಳು',
     front: 'ಮುಂಭಾಗ',
-    back: 'ಹಿಂಭಾಗ',
+    backSide: 'ಹಿಂಭಾಗ',
     optional: 'ಐಚ್ಛಿಕ',
     save: 'ಉಳಿಸಿ',
     cancel: 'ರದ್ದುಮಾಡಿ',
@@ -748,7 +723,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'നിങ്ങളുടെ വ്യക്തിഗത രേഖ ഡയറി. നിങ്ങളുടെ പ്രധാനപ്പെട്ട തിരിച്ചറിയൽ കാർഡുകളും രേഖകളും സുരക്ഷിതമായും ക്രമീകൃതമായും എല്ലായ്‌പ്പോഴും ലഭ്യമായും സൂക്ഷിക്കുക.',
     version: 'പതിപ്പ് 1.0.0 Beta',
     settings: 'ക്രമീകരണങ്ങൾ',
-    back: 'മടങ്ങുക',
+    goBack: 'മടങ്ങുക',
     familyMembers: 'കുടുംബാംഗങ്ങൾ',
     addFamilyMember: 'കുടുംബാംഗത്തെ ചേർക്കുക',
     slotsRemaining: 'കൂടുതൽ അംഗങ്ങളെ ചേർക്കാം',
@@ -789,7 +764,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'കാലഹരണ തീയതി',
     documentImages: 'രേഖ ചിത്രങ്ങൾ',
     front: 'മുന്നിൽ',
-    back: 'പിന്നിൽ',
+    backSide: 'പിന്നിൽ',
     optional: 'ഓപ്ഷണൽ',
     save: 'സംരക്ഷിക്കുക',
     cancel: 'റദ്ദാക്കുക',
@@ -821,10 +796,10 @@ export const translations: Record<LanguageCode, Translations> = {
   or: {
     appName: 'PothiPatra',
     appTagline: 'ଆପଣଙ୍କ ଦଲିଲ ଡାଏରୀ',
-    appDescription: 'ଆପଣଙ୍କ ବ୍ୟକ୍ତିଗତ ଦଲିଲ ଡାଏରୀ। ଆପଣଙ୍କ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ପରିଚୟ ପତ୍ର ଏବଂ ଦଲିଲଗୁଡ଼ିକୁ ସୁରକ୍ଷିତ, ସଂଗଠିତ ଏବଂ ସର୍ବଦା ଉପಲବ୍ଧ ରଖନ୍ତୁ।',
+    appDescription: 'ଆପଣଙ୍କ ବ୍ୟକ୍ତିଗତ ଦଲିଲ ଡାଏରୀ। ଆପଣଙ୍କ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ପରିଚୟ ପତ୍ର ଏବଂ ଦଲିଲଗୁଡ଼ିକୁ ସୁରକ୍ଷିତ, ସଂଗଠିତ ଏବଂ ସର୍ବଦା ଉपਲବ୍ଧ ରଖନ୍ତୁ।',
     version: 'ସଂସ୍କରଣ 1.0.0 Beta',
     settings: 'ସେଟିଂସ',
-    back: 'ପଛକୁ',
+    goBack: 'ପଛକୁ',
     familyMembers: 'ପରିବାର ସଦସ୍ୟ',
     addFamilyMember: 'ପରିବାର ସଦସ୍ୟ ଯୋଡ଼ନ୍ତୁ',
     slotsRemaining: 'ଆହୁରି ସଦସ୍ୟ ଯୋଡ଼ାଯାଇପାରିବ',
@@ -865,7 +840,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'ସମାପ୍ତ ତାରିଖ',
     documentImages: 'ଦଲିଲ ଫଟୋ',
     front: 'ସାମନା',
-    back: 'ପଛ',
+    backSide: 'ପଛ',
     optional: 'ଐଚ୍ଛିକ',
     save: 'ସଞ୍ଚୟ କରନ୍ତୁ',
     cancel: 'ବାତିଲ କରନ୍ତୁ',
@@ -900,7 +875,7 @@ export const translations: Record<LanguageCode, Translations> = {
     appDescription: 'ਤੁਹਾਡੀ ਨਿੱਜੀ ਦਸਤਾਵੇਜ਼ ਡਾਇਰੀ। ਆਪਣੇ ਮਹੱਤਵਪੂਰਨ ਪਛਾਣ ਪੱਤਰ ਅਤੇ ਦਸਤਾਵੇਜ਼ਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ, ਸੰਗਠਿਤ ਅਤੇ ਹਮੇਸ਼ਾ ਉਪਲਬਧ ਰੱਖੋ।',
     version: 'ਸੰਸਕਰਨ 1.0.0 Beta',
     settings: 'ਸੈਟਿੰਗਾਂ',
-    back: 'ਪਿੱਛੇ',
+    goBack: 'ਪਿੱਛੇ',
     familyMembers: 'ਪਰਿਵਾਰਕ ਮੈਂਬਰ',
     addFamilyMember: 'ਪਰਿਵਾਰਕ ਮੈਂਬਰ ਜੋੜੋ',
     slotsRemaining: 'ਹੋਰ ਮੈਂਬਰ ਜੋੜ ਸਕਦੇ ਹੋ',
@@ -941,7 +916,7 @@ export const translations: Record<LanguageCode, Translations> = {
     expiryDate: 'ਸਮਾਪਤੀ ਮਿਤੀ',
     documentImages: 'ਦਸਤਾਵੇਜ਼ ਫੋਟੋ',
     front: 'ਅੱਗੇ',
-    back: 'ਪਿੱਛੇ',
+    backSide: 'ਪਿੱਛੇ',
     optional: 'ਵਿਕਲਪਿਕ',
     save: 'ਸੇਵ ਕਰੋ',
     cancel: 'ਰੱਦ ਕਰੋ',
