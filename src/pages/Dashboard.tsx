@@ -66,6 +66,7 @@ export default function Dashboard() {
                   ? [
                       { documentType: "Aadhaar Card", personName: "Rahul Sharma" },
                       { documentType: "PAN Card", personName: "Rahul Sharma" },
+                      { documentType: "Driving Licence", personName: "Rahul Sharma", expiryDate: "2025-02-15" },
                       { documentType: "Passport", personName: "Rahul Sharma", expiryDate: "2028-05-15" }
                     ]
                   : hasAadhaar 
