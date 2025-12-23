@@ -129,7 +129,7 @@ export function DocumentDetailSheet({ document, open, onOpenChange }: DocumentDe
                 )}
                 {document.backImage && (
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">{t.back}</p>
+                    <p className="text-xs text-muted-foreground">{t.backSide}</p>
                     <img
                       src={document.backImage}
                       alt="Back"

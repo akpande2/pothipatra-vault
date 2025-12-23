@@ -278,7 +278,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                   ) : (
                     <>
                       <Camera className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{t.back}</span>
+                      <span className="text-xs text-muted-foreground">{t.backSide}</span>
                     </>
                   )}
                 </button>
@@ -288,6 +288,8 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
             {/* Actions */}
             <div className="flex gap-3 pt-4">
               <Button variant="outline" className="flex-1 gap-2" onClick={() => setStep('type')}>
+                <ArrowLeft className="w-4 h-4" />
+                {t.goBack}
                 <ArrowLeft className="w-4 h-4" />
                 {t.back}
               </Button>
