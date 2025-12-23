@@ -6,11 +6,18 @@ import { ChatInput } from '@/components/ChatInput';
 import { ChatEmptyState } from '@/components/ChatEmptyState';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+interface DocumentInfo {
+  documentType: string;
+  personName: string;
+  expiryDate?: string;
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  document?: DocumentInfo;
 }
 
 export default function Dashboard() {
@@ -39,12 +46,27 @@ export default function Dashboard() {
 
     setMessages((prev) => [...prev, userMessage, checkingMessage]);
 
-    // Simulate assistant response after a brief delay (UI only)
+    // Simulate assistant response with document card (UI demo)
+    const lowerContent = content.toLowerCase();
+    const hasAadhaar = lowerContent.includes('aadhaar');
+    
     setTimeout(() => {
       setMessages((prev) => 
         prev.map((msg) => 
           msg.id === checkingMessage.id
-            ? { ...msg, content: "I don't see this document yet. You can upload it using the Documents section." }
+            ? { 
+                ...msg, 
+                content: hasAadhaar 
+                  ? "Here's the Aadhaar card I found:" 
+                  : "I don't see this document yet. You can upload it using the Documents section.",
+                document: hasAadhaar 
+                  ? {
+                      documentType: "Aadhaar Card",
+                      personName: "Rahul Sharma",
+                      expiryDate: undefined
+                    }
+                  : undefined
+              }
             : msg
         )
       );
@@ -74,6 +96,7 @@ export default function Dashboard() {
                     role={message.role}
                     content={message.content}
                     timestamp={message.timestamp}
+                    document={message.document}
                   />
                 ))}
               </div>
