@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { AppLayout } from '@/components/AppLayout';
-import { Camera, Image, FileText, X, Check } from 'lucide-react';
+import { Camera, Image, FileText, X, Check, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -115,13 +115,24 @@ export default function UploadID() {
         onChange={handleFileChange}
       />
 
+      {/* Header */}
+      <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4">
+        <div className="w-9" />
+        <h1 className="text-lg font-semibold text-foreground">
+          {t.addDocument}
+        </h1>
+        <Link
+          to="/settings"
+          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+        >
+          <Settings className="w-[18px] h-[18px] text-muted-foreground" />
+        </Link>
+      </header>
+
       {step === 'source' ? (
-        <div className="flex flex-col h-full p-6">
-          {/* Header */}
+        <div className="flex flex-col flex-1 p-6">
+          {/* Description */}
           <div className="mb-8">
-            <h1 className="text-xl font-semibold text-foreground mb-2">
-              {t.addDocument}
-            </h1>
             <p className="text-muted-foreground text-base">
               {language === 'hi' 
                 ? 'अपना दस्तावेज़ कैसे अपलोड करना चाहते हैं?'
