@@ -8,7 +8,6 @@ import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Splash from "./pages/Splash";
-import ProfileSelection from "./pages/ProfileSelection";
 import Dashboard from "./pages/Dashboard";
 import IDCards from "./pages/IDCards";
 import UploadID from "./pages/UploadID";
@@ -26,7 +25,6 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/splash" element={<Splash />} />
-            <Route path="/profiles" element={<ProfileSelection />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/id-cards" element={<IDCards />} />
             <Route path="/upload" element={<UploadID />} />
