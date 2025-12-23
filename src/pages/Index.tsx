@@ -7,18 +7,20 @@ import { AddDocumentSheet } from '@/components/AddDocumentSheet';
 import { DocumentDetailSheet } from '@/components/DocumentDetailSheet';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { useStore } from '@/hooks/useStore';
-import { Document, DocumentType } from '@/types/document';
+import { Document, DocumentType, RelationType } from '@/types/document';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 const Index = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     documents,
     addDocument,
     deleteDocument,
+    isPersonKnown,
+    addKnownPerson,
     isLoading,
   } = useStore();
 
@@ -29,6 +31,18 @@ const Index = () => {
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
+
+  const checkPersonKnown = (name: string): boolean => {
+    return !!isPersonKnown(name);
+  };
+
+  const handleNewPerson = (name: string, relation: RelationType) => {
+    addKnownPerson(name, relation);
+    toast({
+      title: language === 'hi' ? 'व्यक्ति जोड़ा गया' : 'Person added',
+      description: name,
+    });
+  };
 
   const filteredDocuments = documents.filter(doc =>
     doc.holderName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -148,6 +162,8 @@ const Index = () => {
         open={addDocumentOpen}
         onOpenChange={setAddDocumentOpen}
         onSubmit={handleAddDocument}
+        isPersonKnown={checkPersonKnown}
+        onNewPerson={handleNewPerson}
       />
 
       <DocumentDetailSheet
