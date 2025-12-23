@@ -7,6 +7,12 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Splash from "./pages/Splash";
+import ProfileSelection from "./pages/ProfileSelection";
+import Dashboard from "./pages/Dashboard";
+import IDCards from "./pages/IDCards";
+import UploadID from "./pages/UploadID";
+import ChatHistory from "./pages/ChatHistory";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +25,12 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/splash" element={<Splash />} />
+            <Route path="/profiles" element={<ProfileSelection />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/id-cards" element={<IDCards />} />
+            <Route path="/upload" element={<UploadID />} />
+            <Route path="/chat-history" element={<ChatHistory />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
