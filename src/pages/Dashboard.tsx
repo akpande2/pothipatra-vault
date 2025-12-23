@@ -29,15 +29,26 @@ export default function Dashboard() {
       timestamp,
     };
 
-    // Simulate assistant response (UI only)
-    const assistantMessage: Message = {
+    // Add temporary "checking" response
+    const checkingMessage: Message = {
       id: `assistant-${Date.now()}`,
       role: 'assistant',
-      content: "I don't see this document yet. You can upload it using the Documents section.",
+      content: "Checking your documents…",
       timestamp,
     };
 
-    setMessages((prev) => [...prev, userMessage, assistantMessage]);
+    setMessages((prev) => [...prev, userMessage, checkingMessage]);
+
+    // Simulate assistant response after a brief delay (UI only)
+    setTimeout(() => {
+      setMessages((prev) => 
+        prev.map((msg) => 
+          msg.id === checkingMessage.id
+            ? { ...msg, content: "I don't see this document yet. You can upload it using the Documents section." }
+            : msg
+        )
+      );
+    }, 1200);
   };
 
   const hasMessages = messages.length > 0;
@@ -73,7 +84,7 @@ export default function Dashboard() {
         )}
 
         {/* Chat Input */}
-        <ChatInput onSend={handleSendMessage} />
+        <ChatInput onSend={handleSendMessage} placeholder="Ask about your documents…" />
       </div>
     </AppLayout>
   );

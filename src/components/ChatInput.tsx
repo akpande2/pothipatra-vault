@@ -9,7 +9,7 @@ interface ChatInputProps {
   placeholder?: string;
 }
 
-export function ChatInput({ onSend, disabled, placeholder = "Type your question..." }: ChatInputProps) {
+export function ChatInput({ onSend, disabled, placeholder = "Ask about your documents…\nExample: Show my Aadhaar" }: ChatInputProps) {
   const [message, setMessage] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
