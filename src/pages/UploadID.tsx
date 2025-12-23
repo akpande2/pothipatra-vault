@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type UploadStep = 'source' | 'preview';
 
@@ -35,9 +36,20 @@ export default function UploadID() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
+  const handleCameraClick = () => {
+    if ((window as any).PothiBridge) {
+      // Tells Android to open ScannerActivity
+      (window as any).PothiBridge.startCamera();
+      toast.info("Opening Secure Camera...");
+    } else {
+      // Fallback for web/browser - use native file input
+      cameraInputRef.current?.click();
+    }
+  };
+
   const handleSourceSelect = (source: 'camera' | 'gallery' | 'files') => {
     if (source === 'camera') {
-      cameraInputRef.current?.click();
+      handleCameraClick();
     } else {
       fileInputRef.current?.click();
     }
