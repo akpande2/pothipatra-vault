@@ -21,22 +21,22 @@ export function ChatInput({ onSend, disabled, placeholder = "Type your question.
   };
 
   return (
-    <form onSubmit={handleSubmit} className="px-4 pb-4 pt-2 border-t border-border bg-background">
-      <div className="flex items-center gap-3">
+    <form onSubmit={handleSubmit} className="px-4 pb-6 pt-3 border-t border-border bg-background/95 backdrop-blur-sm">
+      <div className="flex items-center gap-3 max-w-2xl mx-auto">
         <Input
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 h-14 rounded-2xl bg-muted/50 border-0 text-base px-5"
+          className="flex-1 h-12 rounded-full bg-muted/50 border-border/50 text-base px-5 focus-visible:ring-1 focus-visible:ring-primary/30"
           disabled={disabled}
         />
         <Button
           type="submit"
           size="icon"
-          className="h-14 w-14 rounded-2xl shrink-0"
+          className="h-12 w-12 rounded-full shrink-0 shadow-sm"
           disabled={disabled || !message.trim()}
         >
-          <Send className="w-5 h-5 stroke-[1.5]" />
+          <Send className="w-5 h-5" />
         </Button>
       </div>
     </form>
