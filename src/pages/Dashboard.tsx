@@ -52,18 +52,20 @@ export default function Dashboard() {
           </h1>
         </header>
 
-        {/* Chat Area */}
+        {/* Large Scrollable Message Area */}
         {hasMessages ? (
-          <ScrollArea className="flex-1 px-4 py-6">
-            <div className="space-y-4 max-w-2xl mx-auto">
-              {messages.map((message) => (
-                <ChatMessage
-                  key={message.id}
-                  role={message.role}
-                  content={message.content}
-                  timestamp={message.timestamp}
-                />
-              ))}
+          <ScrollArea className="flex-1">
+            <div className="px-4 py-8 min-h-full">
+              <div className="space-y-6 max-w-2xl mx-auto">
+                {messages.map((message) => (
+                  <ChatMessage
+                    key={message.id}
+                    role={message.role}
+                    content={message.content}
+                    timestamp={message.timestamp}
+                  />
+                ))}
+              </div>
             </div>
           </ScrollArea>
         ) : (
