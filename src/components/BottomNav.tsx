@@ -1,30 +1,29 @@
 import { Upload, FolderOpen, MessageCircle, Clock } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { useLanguage } from '@/hooks/useLanguage';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { path: '/upload', icon: Upload, labelKey: 'addDocument' },
-  { path: '/id-cards', icon: FolderOpen, labelKey: 'documents' },
-  { path: '/dashboard', icon: MessageCircle, labelKey: 'appName', isMain: true },
-  { path: '/chat-history', icon: Clock, labelKey: 'appName' },
+  { path: '/upload', icon: Upload, label: 'Upload' },
+  { path: '/id-cards', icon: FolderOpen, label: 'Documents' },
+  { path: '/', icon: MessageCircle, label: 'Chat', isMain: true, altPath: '/dashboard' },
+  { path: '/chat-history', icon: Clock, label: 'History' },
 ];
 
 export function BottomNav() {
-  const { t } = useLanguage();
   const location = useLocation();
 
-  const getLabel = (key: string) => {
-    if (key === 'addDocument') return t.addDocument;
-    if (key === 'documents') return t.documents;
-    return key === 'appName' ? 'Chat' : 'History';
+  const isItemActive = (item: typeof navItems[0]) => {
+    if (item.altPath) {
+      return location.pathname === item.path || location.pathname === item.altPath;
+    }
+    return location.pathname === item.path;
   };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-area-bottom">
       <div className="flex items-end justify-around px-2 py-2">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = isItemActive(item);
           const Icon = item.icon;
 
           if (item.isMain) {
@@ -39,16 +38,16 @@ export function BottomNav() {
                     "w-16 h-16 rounded-2xl flex items-center justify-center shadow-elevated transition-all duration-200",
                     isActive
                       ? "bg-primary text-primary-foreground scale-105"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
                   )}
                 >
                   <Icon className="w-7 h-7 stroke-[1.5]" />
                 </div>
                 <span className={cn(
-                  "text-xs mt-1 font-medium",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  "text-xs mt-1 transition-colors",
+                  isActive ? "text-foreground font-semibold" : "text-muted-foreground/60 font-medium"
                 )}>
-                  Chat
+                  {item.label}
                 </span>
               </NavLink>
             );
@@ -62,15 +61,19 @@ export function BottomNav() {
             >
               <Icon
                 className={cn(
-                  "w-6 h-6 stroke-[1.5] transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  "w-6 h-6 transition-all duration-200",
+                  isActive 
+                    ? "text-foreground stroke-[2]" 
+                    : "text-muted-foreground/50 stroke-[1.5]"
                 )}
               />
               <span className={cn(
-                "text-xs mt-1",
-                isActive ? "text-primary font-medium" : "text-muted-foreground"
+                "text-xs mt-1 transition-colors",
+                isActive 
+                  ? "text-foreground font-semibold" 
+                  : "text-muted-foreground/50 font-medium"
               )}>
-                {item.path === '/upload' ? 'Upload' : item.path === '/id-cards' ? 'Documents' : 'History'}
+                {item.label}
               </span>
             </NavLink>
           );
