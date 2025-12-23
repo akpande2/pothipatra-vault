@@ -13,6 +13,7 @@ import IDCards from "./pages/IDCards";
 import UploadID from "./pages/UploadID";
 import ChatHistory from "./pages/ChatHistory";
 import ChatConversation from "./pages/ChatConversation";
+import PrivacyTrust from "./pages/PrivacyTrust";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/upload" element={<UploadID />} />
             <Route path="/chat-history" element={<ChatHistory />} />
             <Route path="/chat/:id" element={<ChatConversation />} />
+            <Route path="/privacy" element={<PrivacyTrust />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
