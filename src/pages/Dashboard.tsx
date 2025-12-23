@@ -17,7 +17,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
-  document?: DocumentInfo;
+  documents?: DocumentInfo[];
 }
 
 export default function Dashboard() {
@@ -46,9 +46,10 @@ export default function Dashboard() {
 
     setMessages((prev) => [...prev, userMessage, checkingMessage]);
 
-    // Simulate assistant response with document card (UI demo)
+    // Simulate assistant response with document cards (UI demo)
     const lowerContent = content.toLowerCase();
     const hasAadhaar = lowerContent.includes('aadhaar');
+    const hasAll = lowerContent.includes('all') || lowerContent.includes('documents');
     
     setTimeout(() => {
       setMessages((prev) => 
@@ -56,16 +57,20 @@ export default function Dashboard() {
           msg.id === checkingMessage.id
             ? { 
                 ...msg, 
-                content: hasAadhaar 
-                  ? "Here's the Aadhaar card I found:" 
-                  : "I don't see this document yet. You can upload it using the Documents section.",
-                document: hasAadhaar 
-                  ? {
-                      documentType: "Aadhaar Card",
-                      personName: "Rahul Sharma",
-                      expiryDate: undefined
-                    }
-                  : undefined
+                content: hasAll
+                  ? "I found multiple documents."
+                  : hasAadhaar 
+                    ? "Here's the Aadhaar card I found:" 
+                    : "I don't see this document yet. You can upload it using the Documents section.",
+                documents: hasAll
+                  ? [
+                      { documentType: "Aadhaar Card", personName: "Rahul Sharma" },
+                      { documentType: "PAN Card", personName: "Rahul Sharma" },
+                      { documentType: "Passport", personName: "Rahul Sharma", expiryDate: "2028-05-15" }
+                    ]
+                  : hasAadhaar 
+                    ? [{ documentType: "Aadhaar Card", personName: "Rahul Sharma" }]
+                    : undefined
               }
             : msg
         )
@@ -96,7 +101,7 @@ export default function Dashboard() {
                     role={message.role}
                     content={message.content}
                     timestamp={message.timestamp}
-                    document={message.document}
+                    documents={message.documents}
                   />
                 ))}
               </div>

@@ -12,10 +12,10 @@ interface ChatMessageProps {
   role: 'user' | 'assistant';
   content: string;
   timestamp?: string;
-  document?: DocumentInfo;
+  documents?: DocumentInfo[];
 }
 
-export function ChatMessage({ role, content, timestamp, document }: ChatMessageProps) {
+export function ChatMessage({ role, content, timestamp, documents }: ChatMessageProps) {
   const isUser = role === 'user';
 
   return (
@@ -43,14 +43,19 @@ export function ChatMessage({ role, content, timestamp, document }: ChatMessageP
       >
         <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{content}</p>
         
-        {/* Document Card */}
-        {document && !isUser && (
-          <ChatDocumentCard
-            documentType={document.documentType}
-            personName={document.personName}
-            expiryDate={document.expiryDate}
-            onView={() => {}}
-          />
+        {/* Document Cards - Stacked Vertically */}
+        {documents && documents.length > 0 && !isUser && (
+          <div className="space-y-3 mt-1">
+            {documents.map((doc, index) => (
+              <ChatDocumentCard
+                key={index}
+                documentType={doc.documentType}
+                personName={doc.personName}
+                expiryDate={doc.expiryDate}
+                onView={() => {}}
+              />
+            ))}
+          </div>
         )}
         
         {timestamp && (
