@@ -35,7 +35,7 @@
     --input: 220 10% 88%;
     --ring: 215 25% 35%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     /* Custom tokens - muted, official feel */
     --paper: 40 20% 98%;
@@ -79,6 +79,8 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: "Noto Sans", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
   }
 
   html {
