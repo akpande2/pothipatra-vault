@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { AppLayout } from '@/components/AppLayout';
 import { ChatMessage } from '@/components/ChatMessage';
 import { ChatInput } from '@/components/ChatInput';
 import { ChatEmptyState } from '@/components/ChatEmptyState';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Settings } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 interface DocumentInfo {
@@ -86,12 +88,19 @@ export default function Dashboard() {
     <AppLayout>
       <div className="flex flex-col h-full">
         {/* Header with Logo */}
-        <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-center">
+        <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4">
+          <div className="w-9" />
           <img 
             src={logo} 
             alt="PothiPatra" 
             className="h-9 w-auto"
           />
+          <Link
+            to="/settings"
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            <Settings className="w-[18px] h-[18px] text-muted-foreground" />
+          </Link>
         </header>
 
         {/* Large Scrollable Message Area */}

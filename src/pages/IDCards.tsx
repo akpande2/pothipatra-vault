@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStore } from '@/hooks/useStore';
 import { AppLayout } from '@/components/AppLayout';
@@ -6,7 +7,7 @@ import { DocumentCard } from '@/components/DocumentCard';
 import { DocumentDetailSheet } from '@/components/DocumentDetailSheet';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, FolderOpen, FileText, Users, ChevronRight } from 'lucide-react';
+import { Search, FolderOpen, FileText, Users, ChevronRight, Settings } from 'lucide-react';
 import { DOCUMENT_TYPES, DocumentType, RELATIONS, Document } from '@/types/document';
 import { cn } from '@/lib/utils';
 
@@ -129,10 +130,20 @@ export default function IDCards() {
     <AppLayout>
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="p-4 pb-0">
-          <h1 className="text-xl font-semibold text-foreground mb-1">
+        <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4">
+          <div className="w-9" />
+          <h1 className="text-lg font-semibold text-foreground">
             {t.documents}
           </h1>
+          <Link
+            to="/settings"
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            <Settings className="w-[18px] h-[18px] text-muted-foreground" />
+          </Link>
+        </header>
+
+        <div className="p-4 pb-0">
           <p className="text-muted-foreground text-sm mb-4">
             {language === 'hi' ? 'आपके सभी सहेजे गए दस्तावेज़' : 'All your saved documents'}
           </p>

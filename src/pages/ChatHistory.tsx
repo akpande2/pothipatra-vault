@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { AppLayout } from '@/components/AppLayout';
-import { Search, MessageSquare, ChevronRight } from 'lucide-react';
+import { Search, MessageSquare, ChevronRight, Settings } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -70,10 +70,17 @@ export default function ChatHistory() {
     <AppLayout>
       <div className="flex flex-col h-full">
         {/* Header */}
-        <header className="px-5 py-4 border-b border-border bg-background/90 backdrop-blur-sm">
-          <h1 className="text-xl font-semibold text-foreground text-center">
+        <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4">
+          <div className="w-9" />
+          <h1 className="text-lg font-semibold text-foreground">
             Chat History
           </h1>
+          <Link
+            to="/settings"
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            <Settings className="w-[18px] h-[18px] text-muted-foreground" />
+          </Link>
         </header>
 
         {/* Search Bar */}
