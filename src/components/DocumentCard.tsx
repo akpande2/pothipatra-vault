@@ -1,6 +1,6 @@
-import { Document, DOCUMENT_TYPES } from '@/types/document';
+import { Document, DOCUMENT_TYPES, KnownPerson, RELATIONS } from '@/types/document';
 import { cn } from '@/lib/utils';
-import { Eye, MoreVertical } from 'lucide-react';
+import { MoreVertical, Eye, Calendar } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,83 +8,108 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useLanguage } from '@/hooks/useLanguage';
+import { format } from 'date-fns';
 
 interface DocumentCardProps {
   document: Document;
   onView: (document: Document) => void;
   onEdit: (document: Document) => void;
   onDelete: (document: Document) => void;
+  knownPerson?: KnownPerson;
 }
 
-export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCardProps) {
+export function DocumentCard({ document, onView, onEdit, onDelete, knownPerson }: DocumentCardProps) {
   const { t, language } = useLanguage();
   const docType = DOCUMENT_TYPES[document.type];
 
   const getDocLabel = () => {
-    const labels: Record<string, string> = {
-      aadhaar: t.aadhaarCard,
-      pan: t.panCard,
-      passport: t.passport,
-      driving: t.drivingLicence,
-      voter: t.voterId,
-      ration: t.rationCard,
-      other: t.otherDocument,
-    };
-    return labels[document.type] || docType.label;
+    return language === 'hi' ? docType.labelHi : docType.label;
   };
+
+  const getRelationLabel = () => {
+    if (!knownPerson) return null;
+    const relation = RELATIONS.find(r => r.value === knownPerson.relation);
+    return relation ? (language === 'hi' ? relation.labelHi : relation.label) : null;
+  };
+
+  const formatUploadDate = () => {
+    try {
+      const date = new Date(document.createdAt);
+      return format(date, 'dd MMM yyyy');
+    } catch {
+      return '';
+    }
+  };
+
+  const relationLabel = getRelationLabel();
 
   return (
     <div
       className={cn(
-        'relative rounded-xl p-5 text-primary-foreground shadow-card transition-all duration-200',
-        'hover:shadow-elevated cursor-pointer',
-        'min-h-[130px] flex flex-col justify-between',
-        docType.color
+        'flex items-center gap-3 p-3 rounded-xl bg-background border border-border',
+        'hover:border-primary/30 hover:bg-muted/30 transition-colors cursor-pointer'
       )}
       onClick={() => onView(document)}
       role="button"
       tabIndex={0}
       aria-label={`${t.viewDetails} ${getDocLabel()}`}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">{docType.icon}</span>
-          <span className="text-sm font-medium opacity-95">{getDocLabel()}</span>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            onClick={(e) => e.stopPropagation()}
-            className="p-1.5 rounded-full hover:bg-primary-foreground/20 transition-colors"
-            aria-label="More options"
-          >
-            <MoreVertical className="w-4 h-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-popover">
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView(document); }}>
-              <Eye className="w-4 h-4 mr-2" />
-              {t.viewDetails}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(document); }}>
-              {t.edit}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => { e.stopPropagation(); onDelete(document); }}
-              className="text-destructive focus:text-destructive"
-            >
-              {t.delete}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {/* Icon */}
+      <div className={cn(
+        'w-11 h-11 rounded-lg flex items-center justify-center shrink-0',
+        'bg-primary/10'
+      )}>
+        <span className="text-xl">{docType.icon}</span>
       </div>
 
       {/* Content */}
-      <div className="mt-3">
-        <p className="text-lg font-semibold tracking-wide">
-          {document.number}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-foreground text-sm truncate">
+            {getDocLabel()}
+          </p>
+          {relationLabel && (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">
+              {relationLabel}
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground truncate">
+          {document.holderName}
         </p>
-        <p className="text-sm opacity-85 mt-0.5">{document.holderName}</p>
+        <div className="flex items-center gap-1 mt-0.5">
+          <Calendar className="w-3 h-3 text-muted-foreground/60" />
+          <span className="text-xs text-muted-foreground/60">
+            {formatUploadDate()}
+          </span>
+        </div>
       </div>
+
+      {/* Actions */}
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          onClick={(e) => e.stopPropagation()}
+          className="p-2 rounded-lg hover:bg-muted transition-colors shrink-0"
+          aria-label="More options"
+        >
+          <MoreVertical className="w-4 h-4 text-muted-foreground" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-popover border border-border z-50">
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView(document); }}>
+            <Eye className="w-4 h-4 mr-2" />
+            {t.viewDetails}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(document); }}>
+            {t.edit}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={(e) => { e.stopPropagation(); onDelete(document); }}
+            className="text-destructive focus:text-destructive"
+          >
+            {t.delete}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

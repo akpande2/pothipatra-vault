@@ -77,11 +77,16 @@ export default function IDCards() {
     return grouped;
   }, [filteredDocuments, language]);
 
+  // Get known person for a document holder
+  const getKnownPerson = (holderName: string) => {
+    return knownPersons.find(p => 
+      p.name.toLowerCase().trim() === holderName.toLowerCase().trim()
+    );
+  };
+
   // Get relation label for a person
   const getPersonRelation = (personName: string) => {
-    const person = knownPersons.find(p => 
-      p.name.toLowerCase().trim() === personName.toLowerCase().trim()
-    );
+    const person = getKnownPerson(personName);
     if (person) {
       const relation = RELATIONS.find(r => r.value === person.relation);
       return language === 'hi' ? relation?.labelHi : relation?.label;
@@ -239,6 +244,7 @@ export default function IDCards() {
                           <DocumentCard 
                             key={doc.id} 
                             document={doc}
+                            knownPerson={getKnownPerson(doc.holderName)}
                             onView={handleViewDocument}
                             onEdit={handleEditDocument}
                             onDelete={handleDeleteDocument}
@@ -287,6 +293,7 @@ export default function IDCards() {
                           <DocumentCard 
                             key={doc.id} 
                             document={doc}
+                            knownPerson={getKnownPerson(doc.holderName)}
                             onView={handleViewDocument}
                             onEdit={handleEditDocument}
                             onDelete={handleDeleteDocument}
