@@ -172,15 +172,15 @@ export default function IDCards() {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {documents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 bg-muted/30 rounded-2xl border border-border">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <FolderOpen className="w-8 h-8 text-primary stroke-[1.5]" />
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-fade-in">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <FolderOpen className="w-8 h-8 text-primary" />
               </div>
-              <p className="text-muted-foreground text-center mb-1">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 {language === 'hi' ? 'कोई दस्तावेज़ नहीं' : 'No documents yet'}
-              </p>
-              <p className="text-muted-foreground/70 text-sm text-center">
-                {language === 'hi' ? 'दस्तावेज़ जोड़ने के लिए अपलोड करें' : 'Upload to add documents'}
+              </h3>
+              <p className="text-muted-foreground text-sm max-w-[260px] leading-relaxed">
+                {language === 'hi' ? 'शुरू करने के लिए अपना पहला दस्तावेज़ अपलोड करें' : 'Upload your first document to get started'}
               </p>
             </div>
           ) : filteredDocuments.length === 0 ? (
