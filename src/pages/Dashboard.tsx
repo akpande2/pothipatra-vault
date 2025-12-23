@@ -5,6 +5,7 @@ import { ChatMessage } from '@/components/ChatMessage';
 import { ChatInput } from '@/components/ChatInput';
 import { ChatEmptyState } from '@/components/ChatEmptyState';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import logo from '@/assets/logo.png';
 
 interface DocumentInfo {
   documentType: string;
@@ -84,11 +85,13 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="flex flex-col h-full">
-        {/* Header */}
-        <header className="px-5 py-4 border-b border-border bg-background/90 backdrop-blur-sm">
-          <h1 className="text-xl font-semibold text-foreground text-center">
-            {t.appName}
-          </h1>
+        {/* Header with Logo */}
+        <header className="px-5 py-3 border-b border-border bg-background/90 backdrop-blur-sm flex items-center justify-center">
+          <img 
+            src={logo} 
+            alt="PothiPatra" 
+            className="h-8 w-auto opacity-90"
+          />
         </header>
 
         {/* Large Scrollable Message Area */}
