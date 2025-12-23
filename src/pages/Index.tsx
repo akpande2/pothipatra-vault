@@ -11,10 +11,12 @@ import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { useStore } from '@/hooks/useStore';
 import { Document, DocumentType } from '@/types/document';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 const Index = () => {
+  const { t } = useLanguage();
   const {
     profiles,
     activeProfile,
@@ -57,8 +59,8 @@ const Index = () => {
       profileId: activeProfileId,
     });
     toast({
-      title: 'दस्तावेज़ सहेजा गया',
-      description: `${data.name} सुरक्षित रूप से जोड़ा गया`,
+      title: t.documentSaved,
+      description: `${data.name}`,
     });
   };
 
@@ -67,13 +69,13 @@ const Index = () => {
       const newProfile = addProfile(data);
       setActiveProfileId(newProfile.id);
       toast({
-        title: 'सदस्य जोड़ा गया',
-        description: `${data.name} की प्रोफाइल तैयार है`,
+        title: t.memberAdded,
+        description: `${data.name} ${t.profileReady}`,
       });
     } catch (error) {
       toast({
-        title: 'नहीं जोड़ सकते',
-        description: 'अधिकतम 4 सदस्य जोड़ सकते हैं',
+        title: t.cannotDelete,
+        description: t.maxMembersReached,
         variant: 'destructive',
       });
     }
@@ -97,8 +99,7 @@ const Index = () => {
     if (documentToDelete) {
       deleteDocument(documentToDelete.id);
       toast({
-        title: 'दस्तावेज़ हटाया गया',
-        description: 'दस्तावेज़ आपकी डायरी से हटा दिया गया है',
+        title: t.documentDeleted,
       });
       setDocumentToDelete(null);
     }
@@ -120,7 +121,7 @@ const Index = () => {
       <main className="px-5 py-4">
         {/* Profile Selector */}
         <section className="mb-5">
-          <p className="text-xs text-muted-foreground mb-2">परिवार के सदस्य</p>
+          <p className="text-xs text-muted-foreground mb-2">{t.familyMembers}</p>
           <ProfileSelector
             profiles={profiles}
             activeProfileId={activeProfileId}
@@ -136,7 +137,7 @@ const Index = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="दस्तावेज़ खोजें..."
+                placeholder={t.searchDocuments}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-muted/50 border-0 text-sm"
@@ -149,10 +150,10 @@ const Index = () => {
         {activeDocuments.length > 0 && (
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm text-muted-foreground">
-              {activeProfile?.name} के दस्तावेज़
+              {activeProfile?.name} - {t.documents}
             </h2>
             <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-              {filteredDocuments.length} {filteredDocuments.length === 1 ? 'दस्तावेज़' : 'दस्तावेज़'}
+              {filteredDocuments.length} {t.document}
             </span>
           </div>
         )}
@@ -174,7 +175,7 @@ const Index = () => {
           <EmptyState onAddDocument={() => setAddDocumentOpen(true)} />
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground text-sm">कोई दस्तावेज़ नहीं मिला</p>
+            <p className="text-muted-foreground text-sm">{t.noDocumentsFound}</p>
           </div>
         )}
       </main>
@@ -205,8 +206,8 @@ const Index = () => {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
-        title="दस्तावेज़ हटाएं?"
-        description="क्या आप वाकई इस दस्तावेज़ को हटाना चाहते हैं? यह वापस नहीं आएगा।"
+        title={t.deleteDocument}
+        description={t.deleteDocumentConfirm}
       />
     </div>
   );

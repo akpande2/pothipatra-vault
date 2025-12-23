@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RELATIONS, Profile } from '@/types/document';
+import { Profile } from '@/types/document';
 import { cn } from '@/lib/utils';
 import {
   Sheet,
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface AddProfileSheetProps {
   open: boolean;
@@ -19,15 +20,24 @@ interface AddProfileSheetProps {
 }
 
 export function AddProfileSheet({ open, onOpenChange, onSubmit }: AddProfileSheetProps) {
+  const { t } = useLanguage();
   const [name, setName] = useState('');
   const [relation, setRelation] = useState<Profile['relation']>('other');
   const { toast } = useToast();
 
+  const relations = [
+    { value: 'self' as const, label: t.self },
+    { value: 'spouse' as const, label: t.spouse },
+    { value: 'child' as const, label: t.child },
+    { value: 'parent' as const, label: t.parent },
+    { value: 'other' as const, label: t.other },
+  ];
+
   const handleSubmit = () => {
     if (!name.trim()) {
       toast({
-        title: 'नाम आवश्यक है',
-        description: 'कृपया परिवार के सदस्य का नाम दर्ज करें',
+        title: t.nameRequired,
+        description: t.enterMemberName,
         variant: 'destructive',
       });
       return;
@@ -43,24 +53,24 @@ export function AddProfileSheet({ open, onOpenChange, onSubmit }: AddProfileShee
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-2xl">
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-left text-base">परिवार का सदस्य जोड़ें</SheetTitle>
+          <SheetTitle className="text-left text-base">{t.addFamilyMember}</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-5 animate-fade-in">
           <div className="space-y-2">
-            <Label htmlFor="profileName">नाम</Label>
+            <Label htmlFor="profileName">{t.name}</Label>
             <Input
               id="profileName"
-              placeholder="नाम दर्ज करें"
+              placeholder={t.enterName}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>संबंध</Label>
+            <Label>{t.relation}</Label>
             <div className="flex flex-wrap gap-2">
-              {RELATIONS.map((rel) => (
+              {relations.map((rel) => (
                 <button
                   key={rel.value}
                   onClick={() => setRelation(rel.value)}
@@ -71,14 +81,14 @@ export function AddProfileSheet({ open, onOpenChange, onSubmit }: AddProfileShee
                       : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   )}
                 >
-                  {rel.labelHi}
+                  {rel.label}
                 </button>
               ))}
             </div>
           </div>
 
           <Button className="w-full" onClick={handleSubmit}>
-            जोड़ें
+            {t.add}
           </Button>
         </div>
       </SheetContent>

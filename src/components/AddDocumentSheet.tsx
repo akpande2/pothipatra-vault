@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ChevronRight, Camera, X, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface AddDocumentSheetProps {
   open: boolean;
@@ -29,6 +30,7 @@ interface AddDocumentSheetProps {
 }
 
 export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSheetProps) {
+  const { t } = useLanguage();
   const [step, setStep] = useState<'type' | 'details'>('type');
   const [selectedType, setSelectedType] = useState<DocumentType | null>(null);
   const [formData, setFormData] = useState({
@@ -42,6 +44,19 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
   });
   const { toast } = useToast();
 
+  const getDocLabel = (type: DocumentType) => {
+    const labels: Record<DocumentType, string> = {
+      aadhaar: t.aadhaarCard,
+      pan: t.panCard,
+      passport: t.passport,
+      driving: t.drivingLicence,
+      voter: t.voterId,
+      ration: t.rationCard,
+      other: t.otherDocument,
+    };
+    return labels[type];
+  };
+
   const handleTypeSelect = (type: DocumentType) => {
     setSelectedType(type);
     setFormData(prev => ({
@@ -54,8 +69,8 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
   const handleSubmit = () => {
     if (!selectedType || !formData.number || !formData.holderName) {
       toast({
-        title: 'जानकारी अधूरी है',
-        description: 'कृपया सभी आवश्यक जानकारी भरें',
+        title: t.incompleteInfo,
+        description: t.fillRequiredFields,
         variant: 'destructive',
       });
       return;
@@ -121,7 +136,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
       <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
         <SheetHeader className="pb-4">
           <SheetTitle className="text-left text-base">
-            {step === 'type' ? 'दस्तावेज़ का प्रकार चुनें' : `${selectedType ? DOCUMENT_TYPES[selectedType].labelHi : ''} जोड़ें`}
+            {step === 'type' ? t.selectDocumentType : `${selectedType ? getDocLabel(selectedType) : ''} ${t.add}`}
           </SheetTitle>
         </SheetHeader>
 
@@ -140,8 +155,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                 >
                   <span className="text-2xl">{info.icon}</span>
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{info.label}</p>
-                    <p className="text-xs text-muted-foreground">{info.labelHi}</p>
+                    <p className="font-medium text-sm">{getDocLabel(type)}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors" />
                 </button>
@@ -152,10 +166,10 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
           <div className="space-y-5 animate-fade-in">
             {/* Document Number */}
             <div className="space-y-2">
-              <Label htmlFor="number">दस्तावेज़ संख्या *</Label>
+              <Label htmlFor="number">{t.documentNumber} *</Label>
               <Input
                 id="number"
-                placeholder="दस्तावेज़ नंबर दर्ज करें"
+                placeholder={t.enterDocumentNumber}
                 value={formData.number}
                 onChange={(e) => setFormData(prev => ({ ...prev, number: e.target.value }))}
               />
@@ -163,10 +177,10 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
 
             {/* Holder Name */}
             <div className="space-y-2">
-              <Label htmlFor="holderName">दस्तावेज़ पर नाम *</Label>
+              <Label htmlFor="holderName">{t.nameOnDocument} *</Label>
               <Input
                 id="holderName"
-                placeholder="जैसा दस्तावेज़ पर लिखा है"
+                placeholder={t.enterNameAsOnDocument}
                 value={formData.holderName}
                 onChange={(e) => setFormData(prev => ({ ...prev, holderName: e.target.value }))}
               />
@@ -175,7 +189,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
             {/* Dates */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="issueDate">जारी करने की तिथि</Label>
+                <Label htmlFor="issueDate">{t.issueDate}</Label>
                 <Input
                   id="issueDate"
                   type="date"
@@ -184,7 +198,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="expiryDate">समाप्ति तिथि</Label>
+                <Label htmlFor="expiryDate">{t.expiryDate}</Label>
                 <Input
                   id="expiryDate"
                   type="date"
@@ -196,7 +210,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
 
             {/* Image Uploads */}
             <div className="space-y-2">
-              <Label>दस्तावेज़ की फोटो (वैकल्पिक)</Label>
+              <Label>{t.documentImages} ({t.optional})</Label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -229,7 +243,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                   ) : (
                     <>
                       <Camera className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">सामने</span>
+                      <span className="text-xs text-muted-foreground">{t.front}</span>
                     </>
                   )}
                 </button>
@@ -264,7 +278,7 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
                   ) : (
                     <>
                       <Camera className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">पीछे</span>
+                      <span className="text-xs text-muted-foreground">{t.back}</span>
                     </>
                   )}
                 </button>
@@ -275,10 +289,10 @@ export function AddDocumentSheet({ open, onOpenChange, onSubmit }: AddDocumentSh
             <div className="flex gap-3 pt-4">
               <Button variant="outline" className="flex-1 gap-2" onClick={() => setStep('type')}>
                 <ArrowLeft className="w-4 h-4" />
-                वापस
+                {t.back}
               </Button>
               <Button className="flex-1" onClick={handleSubmit}>
-                सहेजें
+                {t.save}
               </Button>
             </div>
           </div>

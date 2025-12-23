@@ -1,11 +1,14 @@
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface FloatingAddButtonProps {
   onClick: () => void;
 }
 
 export function FloatingAddButton({ onClick }: FloatingAddButtonProps) {
+  const { t } = useLanguage();
+
   return (
     <button
       onClick={onClick}
@@ -17,7 +20,7 @@ export function FloatingAddButton({ onClick }: FloatingAddButtonProps) {
         'flex items-center justify-center',
         'transition-all duration-200 hover:shadow-deep active:scale-95'
       )}
-      aria-label="दस्तावेज़ जोड़ें"
+      aria-label={t.addDocument}
     >
       <Plus className="w-6 h-6" />
     </button>

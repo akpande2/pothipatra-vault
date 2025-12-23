@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface DeleteConfirmDialogProps {
   open: boolean;
@@ -24,6 +25,8 @@ export function DeleteConfirmDialog({
   title,
   description,
 }: DeleteConfirmDialogProps) {
+  const { t } = useLanguage();
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="rounded-xl max-w-[340px]">
@@ -32,12 +35,12 @@ export function DeleteConfirmDialog({
           <AlertDialogDescription className="text-sm">{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel className="flex-1">रद्द करें</AlertDialogCancel>
+          <AlertDialogCancel className="flex-1">{t.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            हटाएं
+            {t.delete}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,7 +1,8 @@
-import { Profile, RELATIONS } from '@/types/document';
+import { Profile } from '@/types/document';
 import { cn } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface ProfileSelectorProps {
   profiles: Profile[];
@@ -18,6 +19,8 @@ export function ProfileSelector({
   onAddProfile,
   canAddMore,
 }: ProfileSelectorProps) {
+  const { t } = useLanguage();
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -28,8 +31,14 @@ export function ProfileSelector({
   };
 
   const getRelationLabel = (relation: Profile['relation']) => {
-    const rel = RELATIONS.find((r) => r.value === relation);
-    return rel?.label || relation;
+    const labels: Record<string, string> = {
+      self: t.self,
+      spouse: t.spouse,
+      child: t.child,
+      parent: t.parent,
+      other: t.other,
+    };
+    return labels[relation] || relation;
   };
 
   return (
@@ -88,12 +97,12 @@ export function ProfileSelector({
         <button
           onClick={onAddProfile}
           className="flex flex-col items-center gap-1.5 min-w-[68px] p-2 rounded-xl hover:bg-muted transition-colors"
-          aria-label="Add family member"
+          aria-label={t.addFamilyMember}
         >
           <div className="w-11 h-11 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
             <Plus className="w-4 h-4 text-muted-foreground" />
           </div>
-          <p className="text-[10px] text-muted-foreground">Add</p>
+          <p className="text-[10px] text-muted-foreground">{t.add}</p>
         </button>
       )}
     </div>
