@@ -86,11 +86,11 @@ export default function Dashboard() {
     <AppLayout>
       <div className="flex flex-col h-full">
         {/* Header with Logo */}
-        <header className="px-5 py-3 border-b border-border bg-background/90 backdrop-blur-sm flex items-center justify-center">
+        <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-center">
           <img 
             src={logo} 
             alt="PothiPatra" 
-            className="h-8 w-auto opacity-90"
+            className="h-9 w-auto"
           />
         </header>
 
