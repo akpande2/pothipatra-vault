@@ -126,9 +126,15 @@ export default function ChatHistory() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-16">
-                <p className="text-muted-foreground text-center">
-                  No conversations found
+              <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-fade-in">
+                <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6">
+                  <MessageSquare className="w-8 h-8 text-blue-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  No conversations yet
+                </h3>
+                <p className="text-muted-foreground text-sm max-w-[260px] leading-relaxed">
+                  Start a chat to ask about your documents
                 </p>
               </div>
             )}

@@ -146,7 +146,11 @@ const Index = () => {
             ))}
           </div>
         ) : documents.length === 0 ? (
-          <EmptyState onAddDocument={() => setAddDocumentOpen(true)} />
+          <EmptyState 
+            type="documents" 
+            onAction={() => setAddDocumentOpen(true)} 
+            actionLabel="Upload Document"
+          />
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground text-sm">{t.noDocumentsFound}</p>
