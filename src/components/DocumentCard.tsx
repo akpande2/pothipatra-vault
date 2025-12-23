@@ -21,23 +21,30 @@ export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCar
   return (
     <div
       className={cn(
-        'relative rounded-2xl p-5 text-white shadow-card transition-all duration-300',
-        'hover:shadow-elevated hover:scale-[1.02] cursor-pointer',
-        'min-h-[140px] flex flex-col justify-between',
+        'relative rounded-xl p-5 text-primary-foreground shadow-card transition-all duration-200',
+        'hover:shadow-elevated cursor-pointer',
+        'min-h-[130px] flex flex-col justify-between',
         docType.color
       )}
       onClick={() => onView(document)}
+      role="button"
+      tabIndex={0}
+      aria-label={`View ${docType.label}`}
     >
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{docType.icon}</span>
-          <span className="text-sm font-medium opacity-90">{docType.label}</span>
+          <span className="text-xl">{docType.icon}</span>
+          <div>
+            <span className="text-sm font-medium opacity-95">{docType.label}</span>
+            <p className="text-xs opacity-70">{docType.labelHi}</p>
+          </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger
             onClick={(e) => e.stopPropagation()}
-            className="p-1 rounded-full hover:bg-white/20 transition-colors"
+            className="p-1.5 rounded-full hover:bg-primary-foreground/20 transition-colors"
+            aria-label="More options"
           >
             <MoreVertical className="w-4 h-4" />
           </DropdownMenuTrigger>
@@ -60,19 +67,11 @@ export function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCar
       </div>
 
       {/* Content */}
-      <div className="mt-4">
+      <div className="mt-3">
         <p className="text-lg font-semibold tracking-wide">
           {document.number}
         </p>
-        <p className="text-sm opacity-80 mt-1">{document.holderName}</p>
-      </div>
-
-      {/* Decorative pattern */}
-      <div className="absolute top-0 right-0 w-24 h-24 opacity-10">
-        <svg viewBox="0 0 100 100" fill="currentColor">
-          <circle cx="80" cy="20" r="40" />
-          <circle cx="90" cy="60" r="20" />
-        </svg>
+        <p className="text-sm opacity-85 mt-0.5">{document.holderName}</p>
       </div>
     </div>
   );

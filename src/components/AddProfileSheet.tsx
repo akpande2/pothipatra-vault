@@ -26,8 +26,8 @@ export function AddProfileSheet({ open, onOpenChange, onSubmit }: AddProfileShee
   const handleSubmit = () => {
     if (!name.trim()) {
       toast({
-        title: 'Name required',
-        description: 'Please enter a name for the profile',
+        title: 'नाम आवश्यक है',
+        description: 'कृपया परिवार के सदस्य का नाम दर्ज करें',
         variant: 'destructive',
       });
       return;
@@ -41,24 +41,24 @@ export function AddProfileSheet({ open, onOpenChange, onSubmit }: AddProfileShee
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-3xl">
+      <SheetContent side="bottom" className="rounded-t-2xl">
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-left">Add Family Member</SheetTitle>
+          <SheetTitle className="text-left text-base">परिवार का सदस्य जोड़ें</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-5 animate-fade-in">
           <div className="space-y-2">
-            <Label htmlFor="profileName">Name</Label>
+            <Label htmlFor="profileName">नाम</Label>
             <Input
               id="profileName"
-              placeholder="Enter name"
+              placeholder="नाम दर्ज करें"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Relationship</Label>
+            <Label>संबंध</Label>
             <div className="flex flex-wrap gap-2">
               {RELATIONS.map((rel) => (
                 <button
@@ -71,14 +71,14 @@ export function AddProfileSheet({ open, onOpenChange, onSubmit }: AddProfileShee
                       : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   )}
                 >
-                  {rel.label}
+                  {rel.labelHi}
                 </button>
               ))}
             </div>
           </div>
 
           <Button className="w-full" onClick={handleSubmit}>
-            Add Profile
+            जोड़ें
           </Button>
         </div>
       </SheetContent>

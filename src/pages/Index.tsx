@@ -57,8 +57,8 @@ const Index = () => {
       profileId: activeProfileId,
     });
     toast({
-      title: 'Document added',
-      description: `${data.name} has been saved securely`,
+      title: 'दस्तावेज़ सहेजा गया',
+      description: `${data.name} सुरक्षित रूप से जोड़ा गया`,
     });
   };
 
@@ -67,13 +67,13 @@ const Index = () => {
       const newProfile = addProfile(data);
       setActiveProfileId(newProfile.id);
       toast({
-        title: 'Profile created',
-        description: `${data.name}'s profile is ready`,
+        title: 'सदस्य जोड़ा गया',
+        description: `${data.name} की प्रोफाइल तैयार है`,
       });
     } catch (error) {
       toast({
-        title: 'Cannot add profile',
-        description: 'Maximum 4 profiles allowed',
+        title: 'नहीं जोड़ सकते',
+        description: 'अधिकतम 4 सदस्य जोड़ सकते हैं',
         variant: 'destructive',
       });
     }
@@ -85,7 +85,6 @@ const Index = () => {
   };
 
   const handleEditDocument = (document: Document) => {
-    // For now, just view - editing can be added later
     handleViewDocument(document);
   };
 
@@ -98,8 +97,8 @@ const Index = () => {
     if (documentToDelete) {
       deleteDocument(documentToDelete.id);
       toast({
-        title: 'Document deleted',
-        description: 'The document has been removed',
+        title: 'दस्तावेज़ हटाया गया',
+        description: 'दस्तावेज़ आपकी डायरी से हटा दिया गया है',
       });
       setDocumentToDelete(null);
     }
@@ -109,7 +108,7 @@ const Index = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -120,7 +119,8 @@ const Index = () => {
 
       <main className="px-5 py-4">
         {/* Profile Selector */}
-        <section className="mb-6">
+        <section className="mb-5">
+          <p className="text-xs text-muted-foreground mb-2">परिवार के सदस्य</p>
           <ProfileSelector
             profiles={profiles}
             activeProfileId={activeProfileId}
@@ -132,14 +132,14 @@ const Index = () => {
 
         {/* Search */}
         {activeDocuments.length > 0 && (
-          <section className="mb-5">
+          <section className="mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search documents..."
+                placeholder="दस्तावेज़ खोजें..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-muted/50 border-0"
+                className="pl-10 bg-muted/50 border-0 text-sm"
               />
             </div>
           </section>
@@ -147,19 +147,19 @@ const Index = () => {
 
         {/* Document Count */}
         {activeDocuments.length > 0 && (
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              {activeProfile?.name}'s Documents
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm text-muted-foreground">
+              {activeProfile?.name} के दस्तावेज़
             </h2>
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-              {filteredDocuments.length} {filteredDocuments.length === 1 ? 'document' : 'documents'}
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              {filteredDocuments.length} {filteredDocuments.length === 1 ? 'दस्तावेज़' : 'दस्तावेज़'}
             </span>
           </div>
         )}
 
         {/* Documents Grid */}
         {filteredDocuments.length > 0 ? (
-          <div className="grid gap-4 stagger-children">
+          <div className="grid gap-3 stagger-children">
             {filteredDocuments.map((doc) => (
               <DocumentCard
                 key={doc.id}
@@ -174,7 +174,7 @@ const Index = () => {
           <EmptyState onAddDocument={() => setAddDocumentOpen(true)} />
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No documents match your search</p>
+            <p className="text-muted-foreground text-sm">कोई दस्तावेज़ नहीं मिला</p>
           </div>
         )}
       </main>
@@ -205,8 +205,8 @@ const Index = () => {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
-        title="Delete Document"
-        description="Are you sure you want to delete this document? This action cannot be undone."
+        title="दस्तावेज़ हटाएं?"
+        description="क्या आप वाकई इस दस्तावेज़ को हटाना चाहते हैं? यह वापस नहीं आएगा।"
       />
     </div>
   );

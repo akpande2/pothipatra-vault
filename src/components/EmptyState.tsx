@@ -8,18 +8,18 @@ interface EmptyStateProps {
 export function EmptyState({ onAddDocument }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-fade-in">
-      <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
-        <FileText className="w-10 h-10 text-muted-foreground" />
+      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-5">
+        <FileText className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">
-        No documents yet
+      <h3 className="text-lg font-medium text-foreground mb-2">
+        अभी कोई दस्तावेज़ नहीं है
       </h3>
-      <p className="text-muted-foreground text-sm max-w-[260px] mb-6">
-        Start by adding your first ID document to keep it safe and accessible
+      <p className="text-muted-foreground text-sm max-w-[240px] mb-6">
+        अपना पहला पहचान पत्र जोड़ें और इसे सुरक्षित रखें
       </p>
       <Button onClick={onAddDocument} className="gap-2">
         <Plus className="w-4 h-4" />
-        Add Document
+        दस्तावेज़ जोड़ें
       </Button>
     </div>
   );

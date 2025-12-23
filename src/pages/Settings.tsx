@@ -4,9 +4,8 @@ import { useStore } from '@/hooks/useStore';
 import { useToast } from '@/hooks/use-toast';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { Profile, RELATIONS } from '@/types/document';
-import { ChevronLeft, User, Trash2, Shield, Lock, Info } from 'lucide-react';
+import { ChevronLeft, Users, Trash2, BookOpen, Lock, Info } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
 
 const Settings = () => {
   const { profiles, deleteProfile } = useStore();
@@ -23,7 +22,8 @@ const Settings = () => {
   };
 
   const getRelationLabel = (relation: Profile['relation']) => {
-    return RELATIONS.find((r) => r.value === relation)?.label || relation;
+    const rel = RELATIONS.find((r) => r.value === relation);
+    return rel?.labelHi || relation;
   };
 
   const handleDeleteProfile = () => {
@@ -31,13 +31,13 @@ const Settings = () => {
       try {
         deleteProfile(profileToDelete.id);
         toast({
-          title: 'Profile deleted',
-          description: `${profileToDelete.name}'s profile and documents have been removed`,
+          title: 'सदस्य हटाया गया',
+          description: `${profileToDelete.name} और उनके दस्तावेज़ हटा दिए गए`,
         });
       } catch {
         toast({
-          title: 'Cannot delete',
-          description: 'At least one profile is required',
+          title: 'नहीं हटा सकते',
+          description: 'कम से कम एक सदस्य होना चाहिए',
           variant: 'destructive',
         });
       }
@@ -48,24 +48,25 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
         <div className="flex items-center gap-3 px-5 py-4">
           <Link
             to="/"
             className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-muted transition-colors -ml-2"
+            aria-label="Back"
           >
             <ChevronLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-lg font-semibold">Settings</h1>
+          <h1 className="text-lg font-semibold">सेटिंग्स</h1>
         </div>
       </header>
 
       <main className="px-5 py-6 space-y-8">
         {/* Profiles Section */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-            <User className="w-4 h-4" />
-            Family Profiles
+          <h2 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2 uppercase tracking-wide">
+            <Users className="w-4 h-4" />
+            परिवार के सदस्य
           </h2>
           <div className="space-y-2">
             {profiles.map((profile) => (
@@ -80,7 +81,7 @@ const Settings = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{profile.name}</p>
+                    <p className="font-medium text-sm">{profile.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {getRelationLabel(profile.relation)}
                     </p>
@@ -90,6 +91,7 @@ const Settings = () => {
                   <button
                     onClick={() => setProfileToDelete(profile)}
                     className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-destructive/10 transition-colors"
+                    aria-label={`Delete ${profile.name}`}
                   >
                     <Trash2 className="w-4 h-4 text-destructive" />
                   </button>
@@ -98,15 +100,15 @@ const Settings = () => {
             ))}
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {4 - profiles.length} profile slots remaining
+            {4 - profiles.length} और सदस्य जोड़ सकते हैं
           </p>
         </section>
 
         {/* Security Section */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            Security
+          <h2 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2 uppercase tracking-wide">
+            <Lock className="w-4 h-4" />
+            सुरक्षा
           </h2>
           <div className="space-y-2">
             <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
@@ -115,8 +117,8 @@ const Settings = () => {
                   <Lock className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="font-medium">App Lock</p>
-                  <p className="text-xs text-muted-foreground">Coming soon</p>
+                  <p className="font-medium text-sm">ऐप लॉक</p>
+                  <p className="text-xs text-muted-foreground">जल्द आ रहा है</p>
                 </div>
               </div>
             </div>
@@ -125,23 +127,22 @@ const Settings = () => {
 
         {/* About Section */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+          <h2 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2 uppercase tracking-wide">
             <Info className="w-4 h-4" />
-            About
+            जानकारी
           </h2>
           <div className="p-4 rounded-xl bg-card border border-border">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl gradient-gold flex items-center justify-center">
-                <Shield className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-accent" />
               </div>
               <div>
                 <h3 className="font-semibold">PothiPatra</h3>
-                <p className="text-xs text-muted-foreground">Version 1.0.0 Beta</p>
+                <p className="text-xs text-muted-foreground">संस्करण 1.0.0 Beta</p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Your personal digital vault for Indian ID cards and official documents. 
-              Keep your important documents safe, organized, and always accessible.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              आपकी व्यक्तिगत दस्तावेज़ डायरी। अपने महत्वपूर्ण पहचान पत्र और दस्तावेज़ों को सुरक्षित, व्यवस्थित और हमेशा अपनी पहुंच में रखें।
             </p>
           </div>
         </section>
@@ -151,8 +152,8 @@ const Settings = () => {
         open={!!profileToDelete}
         onOpenChange={(open) => !open && setProfileToDelete(null)}
         onConfirm={handleDeleteProfile}
-        title="Delete Profile"
-        description={`Are you sure you want to delete ${profileToDelete?.name}'s profile? All documents under this profile will also be deleted.`}
+        title="सदस्य हटाएं?"
+        description={`क्या आप ${profileToDelete?.name} को हटाना चाहते हैं? उनके सभी दस्तावेज़ भी हट जाएंगे।`}
       />
     </div>
   );
