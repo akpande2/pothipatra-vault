@@ -4,15 +4,34 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { AppLayout } from '@/components/AppLayout';
 import { Camera, Image, FileText, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 type UploadStep = 'source' | 'preview';
+
+const DOCUMENT_TYPES = [
+  { value: 'aadhaar', labelEn: 'Aadhaar Card', labelHi: 'आधार कार्ड' },
+  { value: 'pan', labelEn: 'PAN Card', labelHi: 'पैन कार्ड' },
+  { value: 'passport', labelEn: 'Passport', labelHi: 'पासपोर्ट' },
+  { value: 'driving', labelEn: 'Driving Licence', labelHi: 'ड्राइविंग लाइसेंस' },
+  { value: 'voter', labelEn: 'Voter ID', labelHi: 'मतदाता पहचान पत्र' },
+  { value: 'ration', labelEn: 'Ration Card', labelHi: 'राशन कार्ड' },
+  { value: 'other', labelEn: 'Other', labelHi: 'अन्य' },
+];
 
 export default function UploadID() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [step, setStep] = useState<UploadStep>('source');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [documentType, setDocumentType] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,16 +59,18 @@ export default function UploadID() {
 
   const handleCancel = () => {
     setCapturedImage(null);
+    setDocumentType('');
     setStep('source');
   };
 
   const handleSaveDocument = () => {
-    // Navigate to dashboard with the image data
-    // In a real app, we'd pass this through state management
+    if (!documentType) return;
+    // Navigate to dashboard with the image data and document type
     navigate('/dashboard', { 
       state: { 
         newDocument: true, 
-        imageData: capturedImage 
+        imageData: capturedImage,
+        documentType: documentType
       } 
     });
   };
@@ -149,8 +170,31 @@ export default function UploadID() {
           </div>
 
           {/* Confirmation Section */}
-          <div className="p-6 border-t border-border bg-background">
-            <p className="text-center text-muted-foreground text-base mb-6">
+          <div className="p-6 border-t border-border bg-background space-y-4">
+            {/* Document Type Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="document-type" className="text-sm font-medium text-foreground">
+                {language === 'hi' ? 'दस्तावेज़ का प्रकार' : 'Document Type'}
+              </Label>
+              <Select value={documentType} onValueChange={setDocumentType}>
+                <SelectTrigger id="document-type" className="w-full h-12 bg-background rounded-xl">
+                  <SelectValue placeholder={language === 'hi' ? 'दस्तावेज़ का प्रकार चुनें' : 'Select document type'} />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border border-border z-50">
+                  {DOCUMENT_TYPES.map((type) => (
+                    <SelectItem 
+                      key={type.value} 
+                      value={type.value}
+                      className="cursor-pointer"
+                    >
+                      {language === 'hi' ? type.labelHi : type.labelEn}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <p className="text-center text-muted-foreground text-sm">
               {language === 'hi' 
                 ? 'यह वह दस्तावेज़ है जो PothiPatra में सहेजा जाएगा'
                 : 'This is the version that will be saved in PothiPatra'
@@ -169,6 +213,7 @@ export default function UploadID() {
               <Button 
                 className="flex-1 h-14 gap-2 text-base rounded-xl"
                 onClick={handleSaveDocument}
+                disabled={!documentType}
               >
                 <Check className="w-5 h-5" />
                 {language === 'hi' ? 'दस्तावेज़ सहेजें' : 'Save Document'}
