@@ -15,6 +15,7 @@ import ChatHistory from "./pages/ChatHistory";
 import ChatConversation from "./pages/ChatConversation";
 import PrivacyTrust from "./pages/PrivacyTrust";
 import Reminders from "./pages/Reminders";
+import NotificationSettings from "./pages/NotificationSettings";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/chat/:id" element={<ChatConversation />} />
             <Route path="/privacy" element={<PrivacyTrust />} />
             <Route path="/reminders" element={<Reminders />} />
+            <Route path="/notifications" element={<NotificationSettings />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
