@@ -37,8 +37,12 @@ export default function UploadID() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleCameraClick = () => {
-    if ((window as any).PothiBridge) {
-      // Tells Android to open ScannerActivity
+    if ((window as any).Android) {
+      // Primary: Android WebView bridge
+      (window as any).Android.openScanner();
+      toast.info("Opening Secure Camera...");
+    } else if ((window as any).PothiBridge) {
+      // Alternative: PothiBridge
       (window as any).PothiBridge.startCamera();
       toast.info("Opening Secure Camera...");
     } else {
