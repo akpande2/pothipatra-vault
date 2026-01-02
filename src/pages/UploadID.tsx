@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAndroidBridge } from "@/hooks/useAndroidBridge";
@@ -11,6 +11,18 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 type UploadStep = "source" | "preview";
+
+interface ScanResult {
+  imageData?: string;
+  success?: boolean;
+}
+
+interface ExtractedIdData {
+  name?: string;
+  documentNumber?: string;
+  documentType?: string;
+  [key: string]: unknown;
+}
 
 const DOCUMENT_TYPES = [
   { value: "aadhaar", labelEn: "Aadhaar Card", labelHi: "आधार कार्ड" },
@@ -29,8 +41,51 @@ export default function UploadID() {
   const [step, setStep] = useState<UploadStep>("source");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
+  const [extractedData, setExtractedData] = useState<ExtractedIdData | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // Listen for custom events from Android bridge
+  useEffect(() => {
+    const handleScanComplete = (event: CustomEvent<ScanResult>) => {
+      console.log("[UploadID] scanComplete event received:", event.detail);
+      if (event.detail?.imageData) {
+        setCapturedImage(event.detail.imageData);
+        setStep("preview");
+      }
+    };
+
+    const handleIdExtracted = (event: CustomEvent<ExtractedIdData>) => {
+      console.log("[UploadID] idExtracted event received:", event.detail);
+      setExtractedData(event.detail);
+      if (event.detail?.documentType) {
+        setDocumentType(event.detail.documentType);
+      }
+    };
+
+    const handleGeminiError = (event: CustomEvent<{ message?: string }>) => {
+      console.log("[UploadID] geminiError event received:", event.detail);
+      toast.error(event.detail?.message || "AI processing failed");
+    };
+
+    const handleLoadingStateChange = (event: CustomEvent<{ isLoading: boolean }>) => {
+      console.log("[UploadID] loadingStateChange event received:", event.detail);
+      setIsProcessing(event.detail?.isLoading ?? false);
+    };
+
+    window.addEventListener("scanComplete", handleScanComplete as EventListener);
+    window.addEventListener("idExtracted", handleIdExtracted as EventListener);
+    window.addEventListener("geminiError", handleGeminiError as EventListener);
+    window.addEventListener("loadingStateChange", handleLoadingStateChange as EventListener);
+
+    return () => {
+      window.removeEventListener("scanComplete", handleScanComplete as EventListener);
+      window.removeEventListener("idExtracted", handleIdExtracted as EventListener);
+      window.removeEventListener("geminiError", handleGeminiError as EventListener);
+      window.removeEventListener("loadingStateChange", handleLoadingStateChange as EventListener);
+    };
+  }, []);
 
   const handleCameraClick = () => {
     if (isInApp) {
