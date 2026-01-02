@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAndroidBridge } from "@/hooks/useAndroidBridge";
 import { AppLayout } from "@/components/AppLayout";
-import { Camera, Image, FileText, X, Check, Settings } from "lucide-react";
+import { Camera, Image, FileText, X, Check, Settings, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -24,6 +25,7 @@ const DOCUMENT_TYPES = [
 export default function UploadID() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
+  const { bridgeReady, isInApp, openScanner } = useAndroidBridge();
   const [step, setStep] = useState<UploadStep>("source");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
@@ -31,16 +33,15 @@ export default function UploadID() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleCameraClick = () => {
-    // Debug: Check what's available
-    console.log("Android bridge:", (window as any).Android);
-    console.log("isAndroidBridgeReady:", (window as any).isAndroidBridgeReady);
-
-    if ((window as any).Android) {
-      console.log("Calling Android.openScanner()...");
-      (window as any).Android.openScanner();
-      toast.info("Opening Secure Camera...");
+    if (isInApp) {
+      if (bridgeReady) {
+        openScanner();
+        toast.info("Opening Secure Camera...");
+      } else {
+        toast.info("Initializing scanner...");
+      }
     } else {
-      toast.error("Android bridge not found!");
+      // Web fallback
       cameraInputRef.current?.click();
     }
   };
@@ -146,6 +147,9 @@ export default function UploadID() {
           <div className="flex-1 flex flex-col gap-4">
             {sources.map((source) => {
               const Icon = source.icon;
+              const isCameraButton = source.id === "camera";
+              const showSpinner = isCameraButton && isInApp && !bridgeReady;
+              
               return (
                 <button
                   key={source.id}
@@ -157,7 +161,11 @@ export default function UploadID() {
                   )}
                 >
                   <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Icon className="w-7 h-7 text-primary stroke-[1.5]" />
+                    {showSpinner ? (
+                      <Loader2 className="w-7 h-7 text-primary animate-spin" />
+                    ) : (
+                      <Icon className="w-7 h-7 text-primary stroke-[1.5]" />
+                    )}
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-base text-foreground">{source.label}</p>
