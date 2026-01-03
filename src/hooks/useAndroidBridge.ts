@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
 // TypeScript interface for window.Android
 interface AndroidBridge {
@@ -35,32 +35,32 @@ export const useAndroidBridge = (): UseAndroidBridgeReturn => {
       setBridgeReady(true);
     };
 
-    window.addEventListener('androidBridgeReady', handleBridgeReady);
+    window.addEventListener("androidBridgeReady", handleBridgeReady);
 
     return () => {
-      window.removeEventListener('androidBridgeReady', handleBridgeReady);
+      window.removeEventListener("androidBridgeReady", handleBridgeReady);
     };
   }, []);
 
   const openScanner = useCallback(() => {
-    if (bridgeReady && window.Android) {
+    if (window.Android) {
       window.Android.openScanner();
     } else {
-      console.warn('Android bridge not ready. Cannot open scanner.');
+      console.warn("Android bridge not ready. Cannot open scanner.");
     }
-  }, [bridgeReady]);
+  }, []);
 
   const getCapabilities = useCallback((): string | null => {
-    if (bridgeReady && window.Android) {
+    if (window.Android) {
       return window.Android.getCapabilities();
     }
-    console.warn('Android bridge not ready. Cannot get capabilities.');
+    console.warn("Android bridge not ready. Cannot get capabilities.");
     return null;
-  }, [bridgeReady]);
+  }, []);
 
   return {
     bridgeReady,
-    isInApp: bridgeReady,
+    isInApp,
     openScanner,
     getCapabilities,
   };
