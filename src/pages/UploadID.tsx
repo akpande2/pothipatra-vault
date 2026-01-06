@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useAndroidBridge } from "@/hooks/useAndroidBridge";
 import { AppLayout } from "@/components/AppLayout";
-import { Camera, Image, FileText, X, Check, Settings, Loader2 } from "lucide-react";
+import { Camera, Image, FileText, X, Check, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -37,14 +36,12 @@ const DOCUMENT_TYPES = [
 export default function UploadID() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const { bridgeReady, isInApp, openScanner, openGallery, openFilePicker } = useAndroidBridge();
   const [step, setStep] = useState<UploadStep>("source");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
   const [extractedData, setExtractedData] = useState<ExtractedIdData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Listen for custom events from Android bridge
@@ -80,63 +77,70 @@ export default function UploadID() {
     window.addEventListener("geminiError", handleGeminiError as EventListener);
     window.addEventListener("loadingStateChange", handleLoadingStateChange as EventListener);
 
-    // Listen for file selection from Android
-    window.onFileSelected = (fileData: string, fileName: string, mimeType: string) => {
-      console.log("[UploadID] onFileSelected called:", { fileName, mimeType });
-      if (fileData) {
-        setCapturedImage(fileData);
-        setStep("preview");
-      }
-    };
-
     return () => {
       window.removeEventListener("scanComplete", handleScanComplete as EventListener);
       window.removeEventListener("idExtracted", handleIdExtracted as EventListener);
       window.removeEventListener("geminiError", handleGeminiError as EventListener);
       window.removeEventListener("loadingStateChange", handleLoadingStateChange as EventListener);
-      window.onFileSelected = undefined;
     };
   }, []);
 
-  const handleCameraClick = () => {
-    if (isInApp) {
-      if (bridgeReady) {
-        openScanner();
-        toast.info("Opening Secure Camera...");
-      } else {
-        toast.info("Initializing scanner...");
+  // Listen for file selections from Android
+  useEffect(() => {
+    const handleFileSelected = (event: any) => {
+      console.log("File selected from Android:", event);
+      const data = typeof event === "object" ? event : {};
+      if (data.uri) {
+        setCapturedImage(data.uri);
+        setStep("preview");
+        toast.success("File selected!");
       }
-    } else {
-      // Web fallback
-      cameraInputRef.current?.click();
-    }
-  };
+    };
+
+    // Set global callback for Android
+    (window as any).onFileSelected = handleFileSelected;
+
+    return () => {
+      delete (window as any).onFileSelected;
+    };
+  }, []);
 
   const handleSourceSelect = (source: "camera" | "gallery" | "files") => {
     const android = (window as any).Android;
+    console.log("handleSourceSelect:", source, "Android:", !!android);
     
     if (source === "camera") {
-      if (android?.openScanner) {
+      if (android && typeof android.openScanner === "function") {
+        console.log("Calling Android.openScanner()");
         android.openScanner();
         toast.info("Opening camera...");
-      } else {
-        cameraInputRef.current?.click();
+        return;
       }
+      // Web fallback
+      cameraInputRef.current?.click();
     } else if (source === "gallery") {
-      if (android?.openGallery) {
+      if (android && typeof android.openGallery === "function") {
+        console.log("Calling Android.openGallery()");
         android.openGallery();
         toast.info("Opening gallery...");
-      } else {
-        fileInputRef.current?.click();
+        return;
       }
+      // Web fallback
+      fileInputRef.current?.click();
     } else if (source === "files") {
-      if (android?.openFilePicker) {
+      if (android && typeof android.openFilePicker === "function") {
+        console.log("Calling Android.openFilePicker()");
         android.openFilePicker();
         toast.info("Opening files...");
-      } else {
-        fileInputRef.current?.click();
+        return;
       }
+      // Web fallback
+      fileInputRef.current?.click();
     }
+  };
+
+  const handleCameraClick = () => {
+    handleSourceSelect("camera");
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,7 +200,6 @@ export default function UploadID() {
     <AppLayout>
       {/* Hidden file inputs */}
       <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileChange} />
-      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
       <input
         ref={cameraInputRef}
         type="file"
@@ -233,8 +236,6 @@ export default function UploadID() {
           <div className="flex-1 flex flex-col gap-4">
             {sources.map((source) => {
               const Icon = source.icon;
-              const isCameraButton = source.id === "camera";
-              const showSpinner = isCameraButton && isInApp && !bridgeReady;
               
               return (
                 <button
@@ -247,11 +248,7 @@ export default function UploadID() {
                   )}
                 >
                   <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    {showSpinner ? (
-                      <Loader2 className="w-7 h-7 text-primary animate-spin" />
-                    ) : (
-                      <Icon className="w-7 h-7 text-primary stroke-[1.5]" />
-                    )}
+                    <Icon className="w-7 h-7 text-primary stroke-[1.5]" />
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-base text-foreground">{source.label}</p>
