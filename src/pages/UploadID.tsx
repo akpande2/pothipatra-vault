@@ -37,13 +37,14 @@ const DOCUMENT_TYPES = [
 export default function UploadID() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const { bridgeReady, isInApp, openScanner } = useAndroidBridge();
+  const { bridgeReady, isInApp, openScanner, openGallery, openFilePicker } = useAndroidBridge();
   const [step, setStep] = useState<UploadStep>("source");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
   const [extractedData, setExtractedData] = useState<ExtractedIdData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Listen for custom events from Android bridge
@@ -79,11 +80,21 @@ export default function UploadID() {
     window.addEventListener("geminiError", handleGeminiError as EventListener);
     window.addEventListener("loadingStateChange", handleLoadingStateChange as EventListener);
 
+    // Listen for file selection from Android
+    window.onFileSelected = (fileData: string, fileName: string, mimeType: string) => {
+      console.log("[UploadID] onFileSelected called:", { fileName, mimeType });
+      if (fileData) {
+        setCapturedImage(fileData);
+        setStep("preview");
+      }
+    };
+
     return () => {
       window.removeEventListener("scanComplete", handleScanComplete as EventListener);
       window.removeEventListener("idExtracted", handleIdExtracted as EventListener);
       window.removeEventListener("geminiError", handleGeminiError as EventListener);
       window.removeEventListener("loadingStateChange", handleLoadingStateChange as EventListener);
+      window.onFileSelected = undefined;
     };
   }, []);
 
@@ -104,8 +115,30 @@ export default function UploadID() {
   const handleSourceSelect = (source: "camera" | "gallery" | "files") => {
     if (source === "camera") {
       handleCameraClick();
-    } else {
-      fileInputRef.current?.click();
+    } else if (source === "gallery") {
+      if (isInApp) {
+        if (bridgeReady) {
+          openGallery();
+          toast.info("Opening Gallery...");
+        } else {
+          toast.info("Initializing...");
+        }
+      } else {
+        // Web fallback
+        galleryInputRef.current?.click();
+      }
+    } else if (source === "files") {
+      if (isInApp) {
+        if (bridgeReady) {
+          openFilePicker();
+          toast.info("Opening Files...");
+        } else {
+          toast.info("Initializing...");
+        }
+      } else {
+        // Web fallback
+        fileInputRef.current?.click();
+      }
     }
   };
 
@@ -165,7 +198,8 @@ export default function UploadID() {
   return (
     <AppLayout>
       {/* Hidden file inputs */}
-      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+      <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileChange} />
+      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
       <input
         ref={cameraInputRef}
         type="file"
