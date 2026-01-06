@@ -113,30 +113,27 @@ export default function UploadID() {
   };
 
   const handleSourceSelect = (source: "camera" | "gallery" | "files") => {
+    const android = (window as any).Android;
+    
     if (source === "camera") {
-      handleCameraClick();
-    } else if (source === "gallery") {
-      if (isInApp) {
-        if (bridgeReady) {
-          openGallery();
-          toast.info("Opening Gallery...");
-        } else {
-          toast.info("Initializing...");
-        }
+      if (android?.openScanner) {
+        android.openScanner();
+        toast.info("Opening camera...");
       } else {
-        // Web fallback
-        galleryInputRef.current?.click();
+        cameraInputRef.current?.click();
+      }
+    } else if (source === "gallery") {
+      if (android?.openGallery) {
+        android.openGallery();
+        toast.info("Opening gallery...");
+      } else {
+        fileInputRef.current?.click();
       }
     } else if (source === "files") {
-      if (isInApp) {
-        if (bridgeReady) {
-          openFilePicker();
-          toast.info("Opening Files...");
-        } else {
-          toast.info("Initializing...");
-        }
+      if (android?.openFilePicker) {
+        android.openFilePicker();
+        toast.info("Opening files...");
       } else {
-        // Web fallback
         fileInputRef.current?.click();
       }
     }
