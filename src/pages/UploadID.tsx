@@ -23,6 +23,8 @@ interface ExtractedIdData {
   [key: string]: unknown;
 }
 
+const isAndroidApp = typeof (window as any).Android !== "undefined";
+
 const DOCUMENT_TYPES = [
   { value: "aadhaar", labelEn: "Aadhaar Card", labelHi: "आधार कार्ड" },
   { value: "pan", labelEn: "PAN Card", labelHi: "पैन कार्ड" },
@@ -199,15 +201,26 @@ export default function UploadID() {
   return (
     <AppLayout>
       {/* Hidden file inputs */}
-      <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileChange} />
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+      {!isAndroidApp && (
+      <>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,application/pdf"
+          className="hidden"
+          onChange={handleFileChange}
+          />
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handleFileChange}
+          />
+      </>
+    )}
+
 
       {/* Header */}
       <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4">
