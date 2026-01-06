@@ -108,7 +108,8 @@ export default function UploadID() {
   }, []);
 
   const handleSourceSelect = (source: "camera" | "gallery" | "files") => {
-    const android = (window as any).Android;
+    const android = (window as any).Android || (window as any).parent?.Android || (globalThis as any).Android;
+    console.log("Android bridge object:", android);
     console.log("handleSourceSelect:", source, "Android:", !!android);
     
     if (source === "camera") {
