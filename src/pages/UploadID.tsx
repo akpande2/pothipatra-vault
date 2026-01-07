@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
 import { AppLayout } from "@/components/AppLayout";
-import { Camera, Image, FileText, X, Check, Settings } from "lucide-react";
+import { Camera, Image, FileText, X, Check, Settings, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -10,20 +10,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 type UploadStep = "source" | "preview";
-
-interface ScanResult {
-  imageData?: string;
-  success?: boolean;
-}
-
-interface ExtractedIdData {
-  name?: string;
-  documentNumber?: string;
-  documentType?: string;
-  [key: string]: unknown;
-}
-
-const isAndroidApp = typeof (window as any).Android !== "undefined";
 
 const DOCUMENT_TYPES = [
   { value: "aadhaar", labelEn: "Aadhaar Card", labelHi: "आधार कार्ड" },
@@ -41,123 +27,69 @@ export default function UploadID() {
   const [step, setStep] = useState<UploadStep>("source");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
-  const [extractedData, setExtractedData] = useState<ExtractedIdData | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-
-  // Listen for custom events from Android bridge
-  useEffect(() => {
-    const handleScanComplete = (event: CustomEvent<ScanResult>) => {
-      console.log("[UploadID] scanComplete event received:", event.detail);
-      if (event.detail?.imageData) {
-        setCapturedImage(event.detail.imageData);
-        setStep("preview");
-      }
-    };
-
-    const handleIdExtracted = (event: CustomEvent<ExtractedIdData>) => {
-      console.log("[UploadID] idExtracted event received:", event.detail);
-      setExtractedData(event.detail);
-      if (event.detail?.documentType) {
-        setDocumentType(event.detail.documentType);
-      }
-    };
-
-    const handleGeminiError = (event: CustomEvent<{ message?: string }>) => {
-      console.log("[UploadID] geminiError event received:", event.detail);
-      toast.error(event.detail?.message || "AI processing failed");
-    };
-
-    const handleLoadingStateChange = (event: CustomEvent<{ isLoading: boolean }>) => {
-      console.log("[UploadID] loadingStateChange event received:", event.detail);
-      setIsProcessing(event.detail?.isLoading ?? false);
-    };
-
-    window.addEventListener("scanComplete", handleScanComplete as EventListener);
-    window.addEventListener("idExtracted", handleIdExtracted as EventListener);
-    window.addEventListener("geminiError", handleGeminiError as EventListener);
-    window.addEventListener("loadingStateChange", handleLoadingStateChange as EventListener);
-
-    return () => {
-      window.removeEventListener("scanComplete", handleScanComplete as EventListener);
-      window.removeEventListener("idExtracted", handleIdExtracted as EventListener);
-      window.removeEventListener("geminiError", handleGeminiError as EventListener);
-      window.removeEventListener("loadingStateChange", handleLoadingStateChange as EventListener);
-    };
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Check if Android bridge is available
+  const isAndroid = typeof window !== "undefined" && !!(window as any).Android;
 
   // Listen for file selections from Android
   useEffect(() => {
-    const handleFileSelected = (event: any) => {
-      console.log("File selected from Android:", event);
-      const data = typeof event === "object" ? event : {};
+    (window as any).onFileSelected = (data: { uri: string; type: string; mimeType?: string }) => {
+      console.log("onFileSelected received:", data.type, data.uri?.substring(0, 50));
       if (data.uri) {
         setCapturedImage(data.uri);
         setStep("preview");
+        setIsLoading(false);
         toast.success("File selected!");
       }
     };
 
-    // Set global callback for Android
-    (window as any).onFileSelected = handleFileSelected;
+    (window as any).onScanComplete = (data: any) => {
+      console.log("onScanComplete received:", data);
+      setIsLoading(false);
+      if (data.cancelled) {
+        toast.info("Cancelled");
+      } else if (data.error) {
+        toast.error(data.error);
+      }
+    };
 
     return () => {
       delete (window as any).onFileSelected;
+      delete (window as any).onScanComplete;
     };
   }, []);
 
   const handleSourceSelect = (source: "camera" | "gallery" | "files") => {
-    const android = (window as any).Android || (window as any).parent?.Android || (globalThis as any).Android;
-    console.log("Android bridge object:", android);
-    console.log("handleSourceSelect:", source, "Android:", !!android);
-    
-    if (source === "camera") {
-      if (android && typeof android.openScanner === "function") {
+    const android = (window as any).Android;
+    console.log("handleSourceSelect:", source, "isAndroid:", !!android);
+
+    if (!android) {
+      toast.error("This feature requires the Android app");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      if (source === "camera") {
         console.log("Calling Android.openScanner()");
         android.openScanner();
         toast.info("Opening camera...");
-        return;
-      }
-      // Web fallback
-      cameraInputRef.current?.click();
-    } else if (source === "gallery") {
-      if (android && typeof android.openGallery === "function") {
+      } else if (source === "gallery") {
         console.log("Calling Android.openGallery()");
         android.openGallery();
         toast.info("Opening gallery...");
-        return;
-      }
-      // Web fallback
-      fileInputRef.current?.click();
-    } else if (source === "files") {
-      if (android && typeof android.openFilePicker === "function") {
+      } else if (source === "files") {
         console.log("Calling Android.openFilePicker()");
         android.openFilePicker();
         toast.info("Opening files...");
-        return;
       }
-      // Web fallback
-      fileInputRef.current?.click();
+    } catch (error) {
+      console.error("Bridge call failed:", error);
+      setIsLoading(false);
+      toast.error("Failed to open picker");
     }
-  };
-
-  const handleCameraClick = () => {
-    handleSourceSelect("camera");
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setCapturedImage(reader.result as string);
-        setStep("preview");
-      };
-      reader.readAsDataURL(file);
-    }
-    // Reset input so same file can be selected again
-    e.target.value = "";
   };
 
   const handleCancel = () => {
@@ -168,7 +100,6 @@ export default function UploadID() {
 
   const handleSaveDocument = () => {
     if (!documentType) return;
-    // Navigate to dashboard with the image data and document type
     navigate("/dashboard", {
       state: {
         newDocument: true,
@@ -201,68 +132,48 @@ export default function UploadID() {
 
   return (
     <AppLayout>
-      {/* Hidden file inputs */}
-      {!isAndroidApp && (
-      <>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,application/pdf"
-          className="hidden"
-          onChange={handleFileChange}
-          />
-        <input
-          ref={cameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={handleFileChange}
-          />
-      </>
-    )}
-
-
-      {/* Header */}
       <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4">
         <div className="w-9" />
         <h1 className="text-lg font-semibold text-foreground">{t.addDocument}</h1>
-        <Link
-          to="/settings"
-          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
-        >
+        <Link to="/settings" className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors">
           <Settings className="w-[18px] h-[18px] text-muted-foreground" />
         </Link>
       </header>
 
       {step === "source" ? (
         <div className="flex flex-col flex-1 p-6">
-          {/* Description */}
           <div className="mb-8">
             <p className="text-muted-foreground text-base">
-              {language === "hi"
-                ? "अपना दस्तावेज़ कैसे अपलोड करना चाहते हैं?"
-                : "How would you like to upload your document?"}
+              {language === "hi" ? "अपना दस्तावेज़ कैसे अपलोड करना चाहते हैं?" : "How would you like to upload your document?"}
             </p>
+            {!isAndroid && (
+              <p className="text-red-500 text-sm mt-2">
+                {language === "hi" ? "यह सुविधा केवल Android ऐप में उपलब्ध है" : "This feature is only available in the Android app"}
+              </p>
+            )}
           </div>
 
-          {/* Source Options */}
           <div className="flex-1 flex flex-col gap-4">
             {sources.map((source) => {
               const Icon = source.icon;
-              
               return (
                 <button
                   key={source.id}
                   onClick={() => handleSourceSelect(source.id)}
+                  disabled={isLoading || !isAndroid}
                   className={cn(
                     "flex items-center gap-4 p-5 rounded-2xl border border-border",
                     "bg-card hover:bg-muted/50 hover:border-primary/30",
                     "transition-all duration-200 text-left group",
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
                   )}
                 >
                   <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Icon className="w-7 h-7 text-primary stroke-[1.5]" />
+                    {isLoading ? (
+                      <Loader2 className="w-7 h-7 text-primary animate-spin" />
+                    ) : (
+                      <Icon className="w-7 h-7 text-primary stroke-[1.5]" />
+                    )}
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-base text-foreground">{source.label}</p>
@@ -275,20 +186,13 @@ export default function UploadID() {
         </div>
       ) : (
         <div className="flex flex-col h-full bg-background">
-          {/* Full-screen Preview */}
           <div className="flex-1 relative bg-muted/30 flex items-center justify-center p-4">
             {capturedImage && (
-              <img
-                src={capturedImage}
-                alt="Document preview"
-                className="max-w-full max-h-full object-contain rounded-xl shadow-lg"
-              />
+              <img src={capturedImage} alt="Document preview" className="max-w-full max-h-full object-contain rounded-xl shadow-lg" />
             )}
           </div>
 
-          {/* Confirmation Section */}
           <div className="p-6 border-t border-border bg-background space-y-4">
-            {/* Document Type Selection */}
             <div className="space-y-2">
               <Label htmlFor="document-type" className="text-sm font-medium text-foreground">
                 {language === "hi" ? "दस्तावेज़ का प्रकार" : "Document Type"}
@@ -308,9 +212,7 @@ export default function UploadID() {
             </div>
 
             <p className="text-center text-muted-foreground text-sm">
-              {language === "hi"
-                ? "यह वह दस्तावेज़ है जो PothiPatra में सहेजा जाएगा"
-                : "This is the version that will be saved in PothiPatra"}
+              {language === "hi" ? "यह वह दस्तावेज़ है जो PothiPatra में सहेजा जाएगा" : "This is the version that will be saved in PothiPatra"}
             </p>
 
             <div className="flex gap-3">
@@ -318,11 +220,7 @@ export default function UploadID() {
                 <X className="w-5 h-5" />
                 {t.cancel}
               </Button>
-              <Button
-                className="flex-1 h-14 gap-2 text-base rounded-xl"
-                onClick={handleSaveDocument}
-                disabled={!documentType}
-              >
+              <Button className="flex-1 h-14 gap-2 text-base rounded-xl" onClick={handleSaveDocument} disabled={!documentType}>
                 <Check className="w-5 h-5" />
                 {language === "hi" ? "दस्तावेज़ सहेजें" : "Save Document"}
               </Button>
