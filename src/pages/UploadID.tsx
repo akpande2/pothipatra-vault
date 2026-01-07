@@ -191,13 +191,6 @@ export default function UploadID() {
                 ? "अपना दस्तावेज़ कैसे अपलोड करना चाहते हैं?"
                 : "How would you like to upload your document?"}
             </p>
-            {!isAndroid && (
-              <p className="text-red-500 text-sm mt-2">
-                {language === "hi"
-                  ? "यह सुविधा केवल Android ऐप में उपलब्ध है"
-                  : "This feature is only available in the Android app"}
-              </p>
-            )}
           </div>
 
           <div className="flex-1 flex flex-col gap-4">
@@ -206,8 +199,11 @@ export default function UploadID() {
               return (
                 <button
                   key={source.id}
-                  onClick={() => handleSourceSelect(source.id)}
-                  disabled={!isAndroid || isLoading}
+                  onClick={() => {
+                    alert("CLICK WORKED");
+                    handleSourceSelect(source.id);
+                  }}
+                  disabled={isLoading}
                   className={cn(
                     "flex items-center gap-4 p-5 rounded-2xl border border-border",
                     "bg-card hover:bg-muted/50 hover:border-primary/30",
