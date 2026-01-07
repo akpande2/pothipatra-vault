@@ -5,47 +5,45 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { path: '/upload', icon: Upload, label: 'Upload' },
   { path: '/id-cards', icon: FolderOpen, label: 'Documents' },
-  { path: '/', icon: MessageCircle, label: 'Chat', altPath: '/dashboard' },
+  { path: '/dashboard', icon: MessageCircle, label: 'Chat' },
   { path: '/chat-history', icon: Clock, label: 'History' },
 ];
 
 export function BottomNav() {
   const location = useLocation();
 
-  const isItemActive = (item: typeof navItems[0]) => {
-    if (item.altPath) {
-      return location.pathname === item.path || location.pathname === item.altPath;
-    }
-    return location.pathname === item.path;
+  const isItemActive = (path: string) => {
+    return location.pathname === path;
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border safe-area-bottom pointer-events-auto">
-      <div className="flex items-center justify-around px-4 py-2 pointer-events-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-lg border-t border-border pb-safe">
+      <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
-          const isActive = isItemActive(item);
+          const isActive = isItemActive(item.path);
           const Icon = item.icon;
 
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              className="flex flex-col items-center py-2 px-3 min-w-[64px] pointer-events-auto"
+              className="flex flex-col items-center justify-center flex-1 h-full transition-all"
             >
-              <Icon
-                className={cn(
-                  "w-6 h-6 transition-all duration-200",
-                  isActive
-                    ? "text-foreground stroke-[2]"
-                    : "text-muted-foreground/50 stroke-[1.5]"
-                )}
-              />
+              <div className={cn(
+                "p-1 rounded-xl transition-colors",
+                isActive ? "bg-primary/10" : "bg-transparent"
+              )}>
+                <Icon
+                  className={cn(
+                    "w-5 h-5",
+                    isActive ? "text-primary stroke-[2.5]" : "text-muted-foreground stroke-[1.5]"
+                  )}
+                />
+              </div>
               <span
                 className={cn(
-                  "text-[11px] mt-1.5 transition-colors",
-                  isActive
-                    ? "text-foreground font-semibold"
-                    : "text-muted-foreground/50 font-medium"
+                  "text-[10px] mt-1 transition-colors",
+                  isActive ? "text-primary font-bold" : "text-muted-foreground font-medium"
                 )}
               >
                 {item.label}
