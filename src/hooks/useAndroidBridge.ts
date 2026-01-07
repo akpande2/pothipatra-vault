@@ -22,6 +22,8 @@ declare global {
       openScanner: () => void;
       openGallery: () => void;
       openFilePicker: () => void;
+      getAllStoredIDs: () => void;
+      deleteID: (id: string) => void;
       getCapabilities?: () => string;
       isReady?: () => boolean;
       isAIReady?: () => boolean;
@@ -29,7 +31,19 @@ declare global {
     };
     onFileSelected?: (data: { base64: string; mimeType: string; fileName: string }) => void;
     onScanComplete?: (result: any) => void;
+    onStorageResult?: (data: { ids: StoredID[] }) => void;
+    onDeleteResult?: (data: { success: boolean; id: string }) => void;
   }
+}
+
+export interface StoredID {
+  id: string;
+  type: string;
+  idNumber: string;
+  name: string;
+  dob?: string;
+  isValid?: boolean;
+  createdAt?: number;
 }
 
 interface UseAndroidBridgeReturn {
