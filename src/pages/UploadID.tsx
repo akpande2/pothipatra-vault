@@ -34,12 +34,16 @@ function mapDocType(type?: string): DocumentType {
   if (t === 'PAN') return 'pan';
   if (t === 'VOTER_ID' || t === 'VOTER') return 'voter';
   if (t === 'PASSPORT') return 'passport';
-  if (t === 'DRIVING' || t === 'DL') return 'driving';
-  if (t === 'RATION') return 'ration';
+  if (t === 'DRIVING_LICENSE' || t === 'DRIVING' || t === 'DL') return 'driving';
+  if (t === 'RATION_CARD' || t === 'RATION') return 'ration';
+  if (t === 'BIRTH_CERTIFICATE') return 'other'; // Map to 'other' since no specific type exists
   return 'other';
 }
 
-function getDocLabel(type: DocumentType): string {
+function getDocLabel(type: DocumentType, rawType?: string): string {
+  // Special handling for birth certificate
+  if (rawType?.toUpperCase() === 'BIRTH_CERTIFICATE') return 'BirthCert';
+  
   const labels: Record<DocumentType, string> = {
     aadhaar: 'Aadhaar', pan: 'PAN', passport: 'Passport',
     driving: 'DL', voter: 'VoterID', ration: 'Ration', other: 'Document'
@@ -89,7 +93,8 @@ export default function UploadID() {
 
       // Generate name: FirstName_DocType or just DocType
       const firstName = holderName?.split(' ')[0] || '';
-      const docName = firstName ? `${firstName}_${getDocLabel(docType)}` : getDocLabel(docType);
+      const docLabel = getDocLabel(docType, rawType);
+      const docName = firstName ? `${firstName}_${docLabel}` : docLabel;
 
       console.log('[UploadID] Saving document:', { docName, docType, idNumber });
 
@@ -102,7 +107,7 @@ export default function UploadID() {
         frontImage: imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : undefined,
       });
 
-      toast.success(`${getDocLabel(docType)} saved!`);
+      toast.success(`${docLabel} saved!`);
       navigate('/');
     };
 
