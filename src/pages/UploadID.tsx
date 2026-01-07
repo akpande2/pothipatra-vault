@@ -184,7 +184,7 @@ export default function UploadID() {
       </header>
 
       {step === "source" ? (
-        <div className="flex flex-col flex-1 p-6">
+      <div className="flex flex-col flex-1 p-6 relative z-50 pointer-events-auto">
           <div className="mb-8">
             <p className="text-muted-foreground text-base">
               {language === "hi"
@@ -193,24 +193,23 @@ export default function UploadID() {
             </p>
           </div>
 
-          <div className="flex-1 flex flex-col gap-4">
+          <div className="flex-1 flex flex-col gap-4 relative z-50 pointer-events-auto">
             {sources.map((source) => {
               const Icon = source.icon;
               return (
                 <button
-                  key={source.id}
                   onClick={() => {
-                    alert("CLICK WORKED");
+                    alert("CLICK RECEIVED");
                     handleSourceSelect(source.id);
                   }}
-                  disabled={isLoading}
                   className={cn(
+                    "pointer-events-auto",
                     "flex items-center gap-4 p-5 rounded-2xl border border-border",
                     "bg-card hover:bg-muted/50 hover:border-primary/30",
-                    "transition-all duration-200 text-left group",
-                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                    "transition-all duration-200 text-left group"
                   )}
                 >
+
                   <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
                     {isLoading ? (
                       <Loader2 className="w-7 h-7 text-primary animate-spin" />
