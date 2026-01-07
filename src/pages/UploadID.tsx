@@ -4,8 +4,8 @@ import { Camera, Image, FileText, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-
-const STORAGE_KEY = 'pothipatra_documents';
+import { useStore } from '@/hooks/useStore';
+import { DocumentType } from '@/types/document';
 
 interface ScanResult {
   success: boolean;
@@ -24,31 +24,34 @@ declare global {
   interface Window {
     Android?: { openScanner: () => void; openGallery: () => void; openFilePicker: () => void };
     onScanComplete?: (result: ScanResult) => void;
-    onFileSelected?: (data: { base64: string; mimeType: string; fileName: string }) => void;
   }
 }
 
-function mapDocType(type?: string): string {
-  switch (type?.toUpperCase()) {
-    case 'AADHAAR': return 'aadhaar';
-    case 'PAN': return 'pan';
-    case 'VOTER_ID': return 'voter';
-    case 'PASSPORT': return 'passport';
-    case 'DRIVING': return 'driving';
-    default: return 'other';
-  }
+function mapDocType(type?: string): DocumentType {
+  const t = type?.toUpperCase();
+  if (t === 'AADHAAR') return 'aadhaar';
+  if (t === 'PAN') return 'pan';
+  if (t === 'VOTER_ID' || t === 'VOTER') return 'voter';
+  if (t === 'PASSPORT') return 'passport';
+  if (t === 'DRIVING' || t === 'DL') return 'driving';
+  if (t === 'RATION') return 'ration';
+  return 'other';
 }
 
-function saveToStorage(doc: any) {
-  const docs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  docs.push({ ...doc, id: `doc_${Date.now()}`, createdAt: Date.now() });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(docs));
+function getDocLabel(type: DocumentType): string {
+  const labels: Record<DocumentType, string> = {
+    aadhaar: 'Aadhaar', pan: 'PAN', passport: 'Passport',
+    driving: 'DL', voter: 'VoterID', ration: 'Ration', other: 'Document'
+  };
+  return labels[type];
 }
 
 export default function UploadID() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addDocument } = useStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('');
   const isAndroid = typeof window !== 'undefined' && !!window.Android;
 
   useEffect(() => {
@@ -57,54 +60,57 @@ export default function UploadID() {
       if (result.cancelled) return;
       if (!result.success) { toast.error(result.error || 'Failed'); return; }
 
-      const docType = result.doc_type || result.extraction?.doc_type || 'other';
+      const rawType = result.doc_type || result.extraction?.doc_type || 'other';
+      const docType = mapDocType(rawType);
       const idNumber = result.id_number || result.extraction?.id_number || '';
       const holderName = result.name || result.extraction?.name || '';
-      const dob = result.dob || result.extraction?.dob || '';
       const imageBase64 = result.image_base64 || '';
 
-      if (!idNumber || idNumber === 'NOT_FOUND') { toast.error('Could not extract ID'); return; }
+      // Generate name: FirstName_DocType
+      const firstName = holderName?.split(' ')[0] || 'Unknown';
+      const docName = `${firstName}_${getDocLabel(docType)}`;
 
-      saveToStorage({
-        type: mapDocType(docType),
-        name: `${docType} Card`,
+      addDocument({
+        type: docType,
+        name: docName,
         number: idNumber,
-        holderName,
-        dateOfBirth: dob,
-        image: imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : '',
-        ocrText: result.ocr_text || '',
+        holderName: holderName,
+        frontImage: imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : undefined,
       });
 
-      toast.success('Document saved!');
+      toast.success(`${getDocLabel(docType)} saved!`);
       navigate('/');
     };
 
-    window.onFileSelected = (data) => {
-      setIsLoading(false);
-      saveToStorage({ type: 'other', name: data.fileName, number: '', holderName: '', image: `data:${data.mimeType};base64,${data.base64}` });
-      toast.success('Uploaded');
-      navigate('/');
-    };
-
-    return () => { window.onScanComplete = undefined; window.onFileSelected = undefined; };
-  }, [navigate]);
+    return () => { window.onScanComplete = undefined; };
+  }, [navigate, addDocument]);
 
   const handleSource = (src: string) => {
     if (isAndroid && window.Android) {
       setIsLoading(true);
+      setLoadingMsg(src === 'camera' ? 'Opening camera...' : 'Processing...');
       if (src === 'camera') window.Android.openScanner();
       else if (src === 'gallery') window.Android.openGallery();
       else window.Android.openFilePicker();
-    } else fileInputRef.current?.click();
+    } else {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setIsLoading(true);
+    setLoadingMsg('Processing...');
     const reader = new FileReader();
     reader.onload = () => {
-      saveToStorage({ type: 'other', name: file.name, number: '', holderName: '', image: reader.result });
+      addDocument({
+        type: 'other',
+        name: file.name.replace(/\.[^/.]+$/, ''),
+        number: '',
+        holderName: '',
+        frontImage: reader.result as string,
+      });
       setIsLoading(false);
       toast.success('Uploaded');
       navigate('/');
@@ -119,11 +125,11 @@ export default function UploadID() {
         <h1 className="font-semibold">Upload Document</h1>
       </div>
       <div className="p-4 space-y-4">
-        <Button className="w-full h-14 gap-3" onClick={() => handleSource('camera')} disabled={isLoading}><Camera className="h-5 w-5" />Camera</Button>
+        <Button className="w-full h-14 gap-3" onClick={() => handleSource('camera')} disabled={isLoading}><Camera className="h-5 w-5" />Scan with Camera</Button>
         <Button variant="outline" className="w-full h-14 gap-3" onClick={() => handleSource('gallery')} disabled={isLoading}><Image className="h-5 w-5" />Gallery</Button>
         <Button variant="outline" className="w-full h-14 gap-3" onClick={() => handleSource('files')} disabled={isLoading}><FileText className="h-5 w-5" />Files</Button>
         <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFile} />
-        {isLoading && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><Card className="p-6"><Loader2 className="h-8 w-8 animate-spin" /></Card></div>}
+        {isLoading && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><Card className="p-6 flex flex-col items-center gap-3"><Loader2 className="h-8 w-8 animate-spin" /><p className="text-sm">{loadingMsg}</p></Card></div>}
       </div>
     </div>
   );
