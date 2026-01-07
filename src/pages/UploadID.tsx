@@ -22,6 +22,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useNativeBridge } from "@/hooks/useNativeBridge";
 
 type UploadStep = "source" | "preview";
 
@@ -38,79 +39,41 @@ const DOCUMENT_TYPES = [
 export default function UploadID() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-
+  const { openScanner, openGallery, bridgeReady } = useNativeBridge();
   const [step, setStep] = useState<UploadStep>("source");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
-  /* ============================================================
-     ANDROID → WEB CALLBACK HANDLER
-     ============================================================ */
   useEffect(() => {
-    // We attach to window immediately and don't delete on unmount 
-    // to ensure the Android app always has a target even during React re-renders.
-    (window as any).onFileSelected = (data: {
-      uri: string;
-      type: string;
-      mimeType?: string;
-    }) => {
-      console.log("BRIDGE: Received file from Android", data);
+    // Listen for the event dispatched by our global hook
+    const handleFile = (event: any) => {
+      const data = event.detail;
       if (data?.uri) {
         setCapturedImage(data.uri);
         setStep("preview");
         setIsLoading(false);
-        toast.success(language === "hi" ? "फाइल प्राप्त हुई" : "File received");
+        toast.success("Document captured!");
       }
     };
 
-    (window as any).onScanComplete = (data: any) => {
-      console.log("BRIDGE: Scan signal", data);
-      setIsLoading(false);
-      if (data?.cancelled) toast.info("Cancelled");
-    };
-
-    // Global debug listener
-    window.addEventListener("androidBridgeReady", () => {
-      console.log("BRIDGE: Handshake received from Native");
-      toast.info("Native Scanner Ready");
-    });
-  }, [language]);
+    window.addEventListener("android-file-received", handleFile);
+    return () => window.removeEventListener("android-file-received", handleFile);
+  }, []);
 
   /* ============================================================
      SOURCE HANDLER
      ============================================================ */
   const handleSourceSelect = (source: "camera" | "gallery" | "files") => {
-    const android = (window as any).Android;
-    
-    // Debugging logs are critical here
-    console.log("Attempting to open:", source);
-    console.log("Android object exists:", !!android);
-
-    if (!android) {
-      toast.error(
-        language === "hi" 
-        ? "एंड्रॉइड ब्रिज नहीं मिला। क्या आप ऐप में हैं?" 
-        : "Android bridge not found. Are you using the app?"
-      );
-      return;
-    }
-
     setIsLoading(true);
 
-    try {
-      if (source === "camera") {
-        android.openScanner();
-      } else if (source === "gallery") {
-        android.openGallery();
-      } else if (source === "files") {
-        android.openFilePicker();
-      }
-    } catch (err) {
-      console.error("Critical Bridge Error:", err);
-      setIsLoading(false);
-      toast.error("Bridge call failed");
+    if (source === "camera") openScanner();
+    else if (source === "gallery") openGallery();
+    else {
+      // Fallback for file picker if needed
+      (window as any).Android?.openFilePicker?.();
     }
+    setTimeout(() => setIsLoading(false), 30000);
   };
 
   const handleCancel = () => {
