@@ -20,8 +20,8 @@ export function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-area-bottom">
-      <div className="flex items-center justify-around px-4 py-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t border-border safe-area-bottom pointer-events-auto">
+      <div className="flex items-center justify-around px-4 py-2 pointer-events-auto">
         {navItems.map((item) => {
           const isActive = isItemActive(item);
           const Icon = item.icon;
@@ -30,22 +30,24 @@ export function BottomNav() {
             <NavLink
               key={item.path}
               to={item.path}
-              className="flex flex-col items-center py-2 px-3 min-w-[64px]"
+              className="flex flex-col items-center py-2 px-3 min-w-[64px] pointer-events-auto"
             >
               <Icon
                 className={cn(
                   "w-6 h-6 transition-all duration-200",
-                  isActive 
-                    ? "text-foreground stroke-[2]" 
+                  isActive
+                    ? "text-foreground stroke-[2]"
                     : "text-muted-foreground/50 stroke-[1.5]"
                 )}
               />
-              <span className={cn(
-                "text-[11px] mt-1.5 transition-colors",
-                isActive 
-                  ? "text-foreground font-semibold" 
-                  : "text-muted-foreground/50 font-medium"
-              )}>
+              <span
+                className={cn(
+                  "text-[11px] mt-1.5 transition-colors",
+                  isActive
+                    ? "text-foreground font-semibold"
+                    : "text-muted-foreground/50 font-medium"
+                )}
+              >
                 {item.label}
               </span>
             </NavLink>
