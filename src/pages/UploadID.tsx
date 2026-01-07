@@ -76,6 +76,15 @@ export default function UploadID() {
     };
   }, []);
 
+  useEffect(() => {
+    const handler = () => {
+      console.log("GLOBAL CLICK DETECTED");
+    };
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
+  }, []);
+
+
   /* ============================================================
      ANDROID BRIDGE READY HANDSHAKE (CRITICAL)
      ============================================================ */
