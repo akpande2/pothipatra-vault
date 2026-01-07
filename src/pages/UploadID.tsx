@@ -199,7 +199,7 @@ export default function UploadID() {
               return (
                 <button
                   onClick={() => {
-                    alert("CLICK RECEIVED");
+                    console.log("CLICK RECEIVED", source.id);
                     handleSourceSelect(source.id);
                   }}
                   className={cn(
