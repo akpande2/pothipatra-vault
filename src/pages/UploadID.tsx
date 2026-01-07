@@ -77,8 +77,13 @@ export default function UploadID() {
       const rawType = result.doc_type || result.extraction?.doc_type || 'other';
       const docType = mapDocType(rawType);
       const idNumber = result.id_number || result.extraction?.id_number || '';
-      const holderName = result.name || result.extraction?.name || '';
       const imageBase64 = result.image_base64 || '';
+      
+      // Handle "NOT_FOUND" as empty
+      let holderName = result.name || result.extraction?.name || '';
+      if (holderName === 'NOT_FOUND' || holderName === 'not_found') {
+        holderName = '';
+      }
 
       console.log('[UploadID] Extracted:', { rawType, docType, idNumber, holderName, hasImage: !!imageBase64 });
 
