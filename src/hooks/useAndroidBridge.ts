@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 
+// 1. Define the exact shape of the object sent from Kotlin
+interface AndroidFileData {
+  uri: string;     // This is your base64 dataUrl
+  type: string;    // 'camera', 'gallery', etc.
+  mimeType?: string;
+}
+
 interface AndroidBridge {
   openScanner(): void;
   openGallery(): void;
@@ -12,7 +19,9 @@ interface AndroidBridge {
 declare global {
   interface Window {
     Android?: AndroidBridge;
-    onFileSelected?: (fileData: string, fileName: string, mimeType: string) => void;
+    // FIXED: Now matches the single-object structure from MainActivity.kt
+    onFileSelected?: (data: AndroidFileData) => void;
+    onScanComplete?: (data: any) => void;
   }
 }
 
@@ -28,50 +37,61 @@ interface UseAndroidBridgeReturn {
 export const useAndroidBridge = (): UseAndroidBridgeReturn => {
   const [bridgeReady, setBridgeReady] = useState(false);
 
-  // Check immediately if we're in Android app
-  const isInApp = typeof window !== "undefined" && !!window.Android;
+  // 2. Reactive In-App check
+  const [isInApp, setIsInApp] = useState(false);
 
   useEffect(() => {
-    if (window.Android) {
-      setBridgeReady(true);
+    const checkBridge = () => {
+      if (window.Android) {
+        console.log("BRIDGE: Android object detected");
+        setBridgeReady(true);
+        setIsInApp(true);
+        return true;
+      }
+      return false;
+    };
+
+    // Check immediately
+    if (!checkBridge()) {
+      // If not found, poll for 2 seconds (Android injection timing varies)
+      const interval = setInterval(() => {
+        if (checkBridge()) clearInterval(interval);
+      }, 500);
+      
+      const timeout = setTimeout(() => clearInterval(interval), 2000);
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
     }
-
-    const handleBridgeReady = () => {
-      setBridgeReady(true);
-    };
-    window.addEventListener("androidBridgeReady", handleBridgeReady);
-
-    return () => {
-      window.removeEventListener("androidBridgeReady", handleBridgeReady);
-    };
   }, []);
 
   const openScanner = useCallback(() => {
-    if (window.Android) {
+    if (window.Android?.openScanner) {
       window.Android.openScanner();
     } else {
-      console.warn("Android bridge not available");
+      console.warn("Scanner not available in this environment");
     }
   }, []);
 
   const openGallery = useCallback(() => {
-    if (window.Android) {
+    if (window.Android?.openGallery) {
       window.Android.openGallery();
     } else {
-      console.warn("Android bridge not available");
+      console.warn("Gallery not available");
     }
   }, []);
 
   const openFilePicker = useCallback(() => {
-    if (window.Android) {
+    if (window.Android?.openFilePicker) {
       window.Android.openFilePicker();
     } else {
-      console.warn("Android bridge not available");
+      console.warn("File picker not available");
     }
   }, []);
 
   const getCapabilities = useCallback((): string | null => {
-    if (window.Android) {
+    if (window.Android?.getCapabilities) {
       return window.Android.getCapabilities();
     }
     return null;
