@@ -6,7 +6,6 @@ import { FloatingAddButton } from '@/components/FloatingAddButton';
 import { AddDocumentSheet } from '@/components/AddDocumentSheet';
 import { DocumentDetailSheet } from '@/components/DocumentDetailSheet';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
-import { SecureVault } from '@/components/SecureVault';
 import { showSuccessToast } from '@/components/SuccessToast';
 import { useStore } from '@/hooks/useStore';
 import { Document, DocumentType, RelationType } from '@/types/document';
@@ -158,9 +157,6 @@ const Index = () => {
             <p className="text-muted-foreground text-sm">{t.noDocumentsFound}</p>
           </div>
         )}
-
-        {/* Secure Vault Section */}
-        <SecureVault />
       </main>
 
       {/* Floating Add Button */}

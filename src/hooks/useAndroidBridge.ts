@@ -18,32 +18,11 @@ interface AndroidBridge {
 
 declare global {
   interface Window {
-    Android?: {
-      openScanner: () => void;
-      openGallery: () => void;
-      openFilePicker: () => void;
-      getAllStoredIDs: () => void;
-      deleteID: (id: string) => void;
-      getCapabilities?: () => string;
-      isReady?: () => boolean;
-      isAIReady?: () => boolean;
-      validateAadhaar?: (uid: string) => boolean;
-    };
-    onFileSelected?: (data: { base64: string; mimeType: string; fileName: string }) => void;
-    onScanComplete?: (result: any) => void;
-    onStorageResult?: (data: { ids: StoredID[] }) => void;
-    onDeleteResult?: (data: { success: boolean; id: string }) => void;
+    Android?: AndroidBridge;
+    // FIXED: Now matches the single-object structure from MainActivity.kt
+    onFileSelected?: (data: AndroidFileData) => void;
+    onScanComplete?: (data: any) => void;
   }
-}
-
-export interface StoredID {
-  id: string;
-  type: string;
-  idNumber: string;
-  name: string;
-  dob?: string;
-  isValid?: boolean;
-  createdAt?: number;
 }
 
 interface UseAndroidBridgeReturn {
