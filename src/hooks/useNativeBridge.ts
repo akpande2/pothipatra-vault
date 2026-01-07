@@ -1,57 +1,54 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
+
+interface AndroidFileData {
+  uri: string;
+  type: string;
+  mimeType?: string;
+}
 
 export const useNativeBridge = () => {
-  const navigate = useNavigate();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [bridgeReady, setBridgeReady] = useState(false);
 
   useEffect(() => {
-    // 1. Listen for Scanned ID results
-    (window as any).onScanningResult = (jsonString: string) => {
-      setIsProcessing(false);
-      try {
-        const result = JSON.parse(jsonString);
-        if (result.success) {
-          toast.success("ID Scanned Successfully!");
-          // Save result to local storage or state
-          localStorage.setItem('last_scanned_id', jsonString);
-          // Redirect to the Documents or Result screen
-          navigate('/documents');
-        } else {
-          toast.error(result.message || "Scanning failed");
-        }
-      } catch (e) {
-        console.error("Failed to parse scan result", e);
+    // 1. Define the callback GLOBALLY as soon as the app starts
+    (window as any).onFileSelected = (data: AndroidFileData) => {
+      console.log("NATIVE_BRIDGE: Data received", data);
+      
+      // Dispatch a custom event so any component (like UploadID) can hear it
+      const event = new CustomEvent("android-file-received", { detail: data });
+      window.dispatchEvent(event);
+    };
+
+    (window as any).onScanComplete = (data: any) => {
+      window.dispatchEvent(new CustomEvent("android-scan-signal", { detail: data }));
+    };
+
+    // 2. Poll for the Android object (sometimes injection is slow)
+    const checkInterval = setInterval(() => {
+      if ((window as any).Android) {
+        setBridgeReady(true);
+        console.log("NATIVE_BRIDGE: Android detected");
+        clearInterval(checkInterval);
       }
-    };
+    }, 500);
 
-    // 2. Listen for the list of saved documents
-    (window as any).onDocumentsLoaded = (jsonString: string) => {
-      try {
-        const docs = JSON.parse(jsonString);
-        // You can use a state manager like TanStack Query or simple localStorage
-        localStorage.setItem('pothi_vault_docs', JSON.stringify(docs));
-        // Trigger a custom event so components know to refresh
-        window.dispatchEvent(new Event('vault-updated'));
-      } catch (e) {
-        console.error("Failed to load documents", e);
-      }
-    };
+    return () => clearInterval(checkInterval);
+  }, []);
 
-    // 3. Listen for Chat AI responses
-    (window as any).onChatResponse = (response: string) => {
-      // Logic to add the AI response to your Chat screen list
-      window.dispatchEvent(new CustomEvent('new-ai-message', { detail: response }));
-    };
+  const openScanner = useCallback(() => {
+    if ((window as any).Android?.openScanner) {
+      (window as any).Android.openScanner();
+    } else {
+      toast.error("Bridge not connected");
+    }
+  }, []);
 
-    return () => {
-      // Cleanup: Remove listeners when app closes
-      delete (window as any).onScanningResult;
-      delete (window as any).onDocumentsLoaded;
-      delete (window as any).onChatResponse;
-    };
-  }, [navigate]);
+  const openGallery = useCallback(() => {
+    if ((window as any).Android?.openGallery) {
+      (window as any).Android.openGallery();
+    }
+  }, []);
 
-  return { isProcessing, setIsProcessing };
+  return { bridgeReady, openScanner, openGallery };
 };
