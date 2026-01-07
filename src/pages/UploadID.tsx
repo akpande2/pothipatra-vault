@@ -97,19 +97,7 @@ function generateDocumentId(): string {
 // ANDROID BRIDGE
 // ============================================================================
 
-declare global {
-  interface Window {
-    Android?: {
-      openScanner: () => void;
-      openGallery: () => void;
-      openFilePicker: () => void;
-      getCapabilities?: () => string;
-      isReady?: () => boolean;
-    };
-    onScanComplete?: (result: ScanResult) => void;
-    onFileSelected?: (data: { base64: string; mimeType: string; fileName: string }) => void;
-  }
-}
+// Types are declared in useAndroidBridge.ts
 
 function isAndroidApp(): boolean {
   return typeof window !== 'undefined' && !!window.Android;
@@ -216,9 +204,9 @@ const UploadID: React.FC = () => {
         description: `ID: ${formatIdNumber(docType, idNumber)}`
       });
       
-      // Navigate to documents page after short delay
+      // Navigate to ID cards page after short delay
       setTimeout(() => {
-        navigate('/documents');
+        navigate('/id-cards');
       }, 1500);
     } else {
       toast.error('Failed to save document');
@@ -256,7 +244,7 @@ const UploadID: React.FC = () => {
     const saved = saveDocument(document);
     if (saved) {
       toast.success('File uploaded', { description: 'Processing required' });
-      navigate('/documents');
+      navigate('/id-cards');
     }
   };
 
@@ -333,7 +321,7 @@ const UploadID: React.FC = () => {
       
       if (saved) {
         toast.success('Document uploaded!');
-        navigate('/documents');
+        navigate('/id-cards');
       } else {
         toast.error('Failed to save document');
       }

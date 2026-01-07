@@ -18,10 +18,17 @@ interface AndroidBridge {
 
 declare global {
   interface Window {
-    Android?: AndroidBridge;
-    // FIXED: Now matches the single-object structure from MainActivity.kt
-    onFileSelected?: (data: AndroidFileData) => void;
-    onScanComplete?: (data: any) => void;
+    Android?: {
+      openScanner: () => void;
+      openGallery: () => void;
+      openFilePicker: () => void;
+      getCapabilities?: () => string;
+      isReady?: () => boolean;
+      isAIReady?: () => boolean;
+      validateAadhaar?: (uid: string) => boolean;
+    };
+    onFileSelected?: (data: { base64: string; mimeType: string; fileName: string }) => void;
+    onScanComplete?: (result: any) => void;
   }
 }
 
