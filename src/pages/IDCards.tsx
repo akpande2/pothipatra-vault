@@ -1,328 +1,97 @@
-import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { useLanguage } from '@/hooks/useLanguage';
-import { useStore } from '@/hooks/useStore';
-import { AppLayout } from '@/components/AppLayout';
-import { DocumentCard } from '@/components/DocumentCard';
-import { DocumentDetailSheet } from '@/components/DocumentDetailSheet';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, FolderOpen, FileText, Users, ChevronRight, Settings } from 'lucide-react';
-import { DOCUMENT_TYPES, DocumentType, RELATIONS, Document } from '@/types/document';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from "react";
 
-const DOCUMENT_CATEGORIES: { type: DocumentType; icon: string }[] = [
-  { type: 'aadhaar', icon: '🆔' },
-  { type: 'pan', icon: '💳' },
-  { type: 'passport', icon: '📘' },
-  { type: 'driving', icon: '🚗' },
-  { type: 'voter', icon: '🗳️' },
-  { type: 'ration', icon: '🏠' },
-  { type: 'other', icon: '📄' },
-];
+interface StoredDocument {
+  id: string;
+  fileName: string;
+  displayName: string;
+  docType: string;
+  ocrText: string;
+  previewUrl: string;
+  createdAt: number;
+}
 
 export default function IDCards() {
-  const { t, language } = useLanguage();
-  const { documents, knownPersons, isLoading, updateDocument, deleteDocument } = useStore();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'type' | 'person'>('type');
-  const [expandedType, setExpandedType] = useState<DocumentType | null>(null);
-  const [expandedPerson, setExpandedPerson] = useState<string | null>(null);
-  
-  // Document actions state
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [docs, setDocs] = useState<StoredDocument[]>([]);
+  const [view, setView] = useState<"type" | "name">("type");
 
-  // Filter documents based on search query
-  const filteredDocuments = useMemo(() => {
-    if (!searchQuery.trim()) return documents;
-    const query = searchQuery.toLowerCase();
-    return documents.filter(doc => 
-      doc.name.toLowerCase().includes(query) ||
-      doc.holderName.toLowerCase().includes(query) ||
-      doc.number.toLowerCase().includes(query) ||
-      DOCUMENT_TYPES[doc.type].label.toLowerCase().includes(query) ||
-      DOCUMENT_TYPES[doc.type].labelHi.includes(query)
-    );
-  }, [documents, searchQuery]);
+  useEffect(() => {
+    const stored =
+      JSON.parse(localStorage.getItem("documents") || "[]") as StoredDocument[];
+    setDocs(stored);
+  }, []);
 
-  // Group documents by type
-  const documentsByType = useMemo(() => {
-    const grouped: Record<DocumentType, typeof documents> = {
-      aadhaar: [],
-      pan: [],
-      passport: [],
-      driving: [],
-      voter: [],
-      ration: [],
-      other: [],
-    };
-    filteredDocuments.forEach(doc => {
-      grouped[doc.type].push(doc);
-    });
-    return grouped;
-  }, [filteredDocuments]);
+  const byType = docs.reduce<Record<string, StoredDocument[]>>((acc, doc) => {
+    acc[doc.docType] = acc[doc.docType] || [];
+    acc[doc.docType].push(doc);
+    return acc;
+  }, {});
 
-  // Group documents by person
-  const documentsByPerson = useMemo(() => {
-    const grouped: Record<string, typeof documents> = {};
-    filteredDocuments.forEach(doc => {
-      const personName = doc.holderName || (language === 'hi' ? 'अज्ञात' : 'Unknown');
-      if (!grouped[personName]) {
-        grouped[personName] = [];
-      }
-      grouped[personName].push(doc);
-    });
-    return grouped;
-  }, [filteredDocuments, language]);
-
-  // Get known person for a document holder
-  const getKnownPerson = (holderName: string) => {
-    return knownPersons.find(p => 
-      p.name.toLowerCase().trim() === holderName.toLowerCase().trim()
-    );
-  };
-
-  // Get relation label for a person
-  const getPersonRelation = (personName: string) => {
-    const person = getKnownPerson(personName);
-    if (person) {
-      const relation = RELATIONS.find(r => r.value === person.relation);
-      return language === 'hi' ? relation?.labelHi : relation?.label;
-    }
-    return null;
-  };
-
-  const handleTypeClick = (type: DocumentType) => {
-    setExpandedType(expandedType === type ? null : type);
-  };
-
-  const handlePersonClick = (personName: string) => {
-    setExpandedPerson(expandedPerson === personName ? null : personName);
-  };
-
-  const handleViewDocument = (doc: Document) => {
-    setSelectedDocument(doc);
-    setIsDetailOpen(true);
-  };
-
-  const handleEditDocument = (doc: Document) => {
-    setSelectedDocument(doc);
-    setIsDetailOpen(true);
-  };
-
-  const handleDeleteDocument = (doc: Document) => {
-    setSelectedDocument(doc);
-    setIsDetailOpen(true);
-  };
-
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-pulse text-muted-foreground">Loading...</div>
-        </div>
-      </AppLayout>
-    );
-  }
+  const byName = docs.reduce<Record<string, StoredDocument[]>>((acc, doc) => {
+    acc[doc.displayName] = acc[doc.displayName] || [];
+    acc[doc.displayName].push(doc);
+    return acc;
+  }, {});
 
   return (
-    <AppLayout>
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4">
-          <div className="w-9" />
-          <h1 className="text-lg font-semibold text-foreground">
-            {t.documents}
-          </h1>
-          <Link
-            to="/settings"
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
-          >
-            <Settings className="w-[18px] h-[18px] text-muted-foreground" />
-          </Link>
-        </header>
-
-        <div className="p-4 pb-0">
-          <p className="text-muted-foreground text-sm mb-4">
-            {language === 'hi' ? 'आपके सभी सहेजे गए दस्तावेज़' : 'All your saved documents'}
-          </p>
-
-          {/* Search Bar */}
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={language === 'hi' ? 'दस्तावेज़ खोजें...' : 'Search documents...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 rounded-xl bg-muted/50 border-border"
-            />
-          </div>
-
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'type' | 'person')}>
-            <TabsList className="w-full grid grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-              <TabsTrigger 
-                value="type" 
-                className="rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-              >
-                <FileText className="h-4 w-4" />
-                {language === 'hi' ? 'प्रकार से' : 'By Type'}
-              </TabsTrigger>
-              <TabsTrigger 
-                value="person" 
-                className="rounded-lg gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-              >
-                <Users className="h-4 w-4" />
-                {language === 'hi' ? 'व्यक्ति से' : 'By Person'}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {documents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-fade-in">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                <FolderOpen className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                {language === 'hi' ? 'कोई दस्तावेज़ नहीं' : 'No documents yet'}
-              </h3>
-              <p className="text-muted-foreground text-sm max-w-[260px] leading-relaxed">
-                {language === 'hi' ? 'शुरू करने के लिए अपना पहला दस्तावेज़ अपलोड करें' : 'Upload your first document to get started'}
-              </p>
-            </div>
-          ) : filteredDocuments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 bg-muted/30 rounded-2xl border border-border">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Search className="w-8 h-8 text-muted-foreground stroke-[1.5]" />
-              </div>
-              <p className="text-muted-foreground text-center">
-                {language === 'hi' ? 'कोई परिणाम नहीं मिला' : 'No results found'}
-              </p>
-            </div>
-          ) : activeTab === 'type' ? (
-            /* By Document Type View */
-            <div className="space-y-2">
-              {DOCUMENT_CATEGORIES.map(({ type, icon }) => {
-                const docs = documentsByType[type];
-                const typeInfo = DOCUMENT_TYPES[type];
-                const isExpanded = expandedType === type;
-
-                return (
-                  <div key={type} className="border border-border rounded-xl overflow-hidden bg-card">
-                    <button
-                      onClick={() => handleTypeClick(type)}
-                      className={cn(
-                        "w-full flex items-center gap-3 p-4 text-left transition-colors",
-                        "hover:bg-muted/50",
-                        docs.length === 0 && "opacity-50"
-                      )}
-                      disabled={docs.length === 0}
-                    >
-                      <span className="text-2xl">{icon}</span>
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">
-                          {language === 'hi' ? typeInfo.labelHi : typeInfo.label}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {docs.length} {language === 'hi' ? 'दस्तावेज़' : docs.length === 1 ? 'document' : 'documents'}
-                        </p>
-                      </div>
-                      {docs.length > 0 && (
-                        <ChevronRight className={cn(
-                          "h-5 w-5 text-muted-foreground transition-transform",
-                          isExpanded && "rotate-90"
-                        )} />
-                      )}
-                    </button>
-                    
-                    {isExpanded && docs.length > 0 && (
-                      <div className="border-t border-border p-3 space-y-2 bg-muted/30">
-                        {docs.map(doc => (
-                          <DocumentCard 
-                            key={doc.id} 
-                            document={doc}
-                            knownPerson={getKnownPerson(doc.holderName)}
-                            onView={handleViewDocument}
-                            onEdit={handleEditDocument}
-                            onDelete={handleDeleteDocument}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            /* By Person View */
-            <div className="space-y-2">
-              {Object.entries(documentsByPerson).map(([personName, docs]) => {
-                const isExpanded = expandedPerson === personName;
-                const relation = getPersonRelation(personName);
-
-                return (
-                  <div key={personName} className="border border-border rounded-xl overflow-hidden bg-card">
-                    <button
-                      onClick={() => handlePersonClick(personName)}
-                      className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-lg font-medium text-primary">
-                          {personName.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">{personName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {relation && <span className="text-primary">{relation} • </span>}
-                          {docs.length} {language === 'hi' ? 'दस्तावेज़' : docs.length === 1 ? 'document' : 'documents'}
-                        </p>
-                      </div>
-                      <ChevronRight className={cn(
-                        "h-5 w-5 text-muted-foreground transition-transform",
-                        isExpanded && "rotate-90"
-                      )} />
-                    </button>
-                    
-                    {isExpanded && (
-                      <div className="border-t border-border p-3 space-y-2 bg-muted/30">
-                        {docs.map(doc => (
-                          <DocumentCard 
-                            key={doc.id} 
-                            document={doc}
-                            knownPerson={getKnownPerson(doc.holderName)}
-                            onView={handleViewDocument}
-                            onEdit={handleEditDocument}
-                            onDelete={handleDeleteDocument}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+    <div className="p-6">
+      <div className="flex gap-4 mb-4">
+        <button
+          onClick={() => setView("type")}
+          className={view === "type" ? "font-bold" : ""}
+        >
+          By Type
+        </button>
+        <button
+          onClick={() => setView("name")}
+          className={view === "name" ? "font-bold" : ""}
+        >
+          By Name
+        </button>
       </div>
 
-      {/* Document Detail Sheet */}
-      <DocumentDetailSheet
-        document={selectedDocument}
-        open={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-        onRename={(id, newName) => {
-          updateDocument(id, { name: newName });
-        }}
-        onDelete={(id) => {
-          deleteDocument(id);
-          setSelectedDocument(null);
-        }}
-      />
-    </AppLayout>
+      {view === "type" &&
+        Object.entries(byType).map(([type, items]) => (
+          <Section key={type} title={type} items={items} />
+        ))}
+
+      {view === "name" &&
+        Object.entries(byName).map(([name, items]) => (
+          <Section key={name} title={name} items={items} />
+        ))}
+    </div>
+  );
+}
+
+function Section({
+  title,
+  items,
+}: {
+  title: string;
+  items: StoredDocument[];
+}) {
+  return (
+    <div className="mb-6">
+      <h2 className="font-semibold mb-2">{title}</h2>
+      <div className="grid grid-cols-2 gap-3">
+        {items.map((doc) => (
+          <div
+            key={doc.id}
+            className="border rounded-lg p-2 bg-background"
+          >
+            {doc.previewUrl && (
+              <img
+                src={doc.previewUrl}
+                alt=""
+                className="w-full h-28 object-cover rounded mb-2"
+              />
+            )}
+            <div className="text-sm font-medium">{doc.fileName}</div>
+            <div className="text-xs text-muted-foreground">
+              {new Date(doc.createdAt).toLocaleDateString()}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
