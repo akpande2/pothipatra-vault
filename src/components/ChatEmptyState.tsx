@@ -1,16 +1,25 @@
 import { MessageCircle } from 'lucide-react';
 
 interface ChatEmptyStateProps {
+  suggestions?: string[];
+  onSuggestionClick?: (question: string) => void;
   onExampleClick?: (question: string) => void;
 }
 
-const exampleQuestions = [
+const defaultSuggestions = [
   "Show my Aadhaar",
   "Do I have a passport?",
   "When does my license expire?",
 ];
 
-export function ChatEmptyState({ onExampleClick }: ChatEmptyStateProps) {
+export function ChatEmptyState({ 
+  suggestions, 
+  onSuggestionClick, 
+  onExampleClick 
+}: ChatEmptyStateProps) {
+  const questions = suggestions || defaultSuggestions;
+  const handleClick = onSuggestionClick || onExampleClick;
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
@@ -26,10 +35,10 @@ export function ChatEmptyState({ onExampleClick }: ChatEmptyStateProps) {
         </p>
 
         <div className="space-y-2">
-          {exampleQuestions.map((question, index) => (
+          {questions.map((question, index) => (
             <button
               key={index}
-              onClick={() => onExampleClick?.(question)}
+              onClick={() => handleClick?.(question)}
               className="w-full px-4 py-3 rounded-xl bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground text-left text-sm transition-colors duration-200"
             >
               "{question}"

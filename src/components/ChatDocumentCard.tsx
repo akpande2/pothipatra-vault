@@ -1,4 +1,4 @@
-import { FileText, Calendar, User, Eye, Clock } from 'lucide-react';
+import { FileText, Calendar, User, Eye, Clock, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,13 +7,21 @@ import { cn } from '@/lib/utils';
 interface ChatDocumentCardProps {
   documentType: string;
   personName: string;
+  idNumber?: string;
   expiryDate?: string;
   onView?: () => void;
+}
+
+// Mask ID number to show only last 4 digits
+function maskIdNumber(idNumber?: string): string {
+  if (!idNumber || idNumber.length < 4) return idNumber || '';
+  return '••••' + idNumber.slice(-4);
 }
 
 export function ChatDocumentCard({ 
   documentType, 
   personName, 
+  idNumber,
   expiryDate,
   onView 
 }: ChatDocumentCardProps) {
@@ -31,13 +39,17 @@ export function ChatDocumentCard({
   };
 
   const expiryStatus = getExpiryStatus();
+  const maskedId = maskIdNumber(idNumber);
 
   return (
-    <Card className={cn(
-      "mt-3 border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden max-w-sm",
-      expiryStatus === 'expiring' && "bg-amber-500/5 border-amber-500/20",
-      expiryStatus === 'expired' && "bg-destructive/5 border-destructive/20"
-    )}>
+    <Card 
+      className={cn(
+        "mt-3 border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden max-w-sm cursor-pointer hover:bg-card/80 transition-colors",
+        expiryStatus === 'expiring' && "bg-amber-500/5 border-amber-500/20",
+        expiryStatus === 'expired' && "bg-destructive/5 border-destructive/20"
+      )}
+      onClick={onView}
+    >
       <CardContent className="p-4">
         {/* Document Type Header */}
         <div className="flex items-center justify-between mb-3">
@@ -76,10 +88,19 @@ export function ChatDocumentCard({
 
         {/* Document Details */}
         <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <User className="h-3.5 w-3.5" />
-            <span>{personName}</span>
-          </div>
+          {personName && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <User className="h-3.5 w-3.5" />
+              <span>{personName}</span>
+            </div>
+          )}
+
+          {maskedId && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Hash className="h-3.5 w-3.5" />
+              <span className="font-mono">{maskedId}</span>
+            </div>
+          )}
           
           {expiryDate && (
             <div className={cn(
@@ -99,7 +120,10 @@ export function ChatDocumentCard({
 
         {/* View Button */}
         <Button 
-          onClick={onView}
+          onClick={(e) => {
+            e.stopPropagation();
+            onView?.();
+          }}
           variant="outline" 
           size="sm" 
           className="w-full gap-2"
