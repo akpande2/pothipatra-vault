@@ -110,8 +110,9 @@ export default function ChatConversation() {
 
   // Set up onChatResponse callback
   useEffect(() => {
+    console.log('[CHAT DEBUG] Setting up onChatResponse callback');
     window.onChatResponse = (response: ChatResponse) => {
-      console.log('[ChatConversation] onChatResponse:', response);
+      console.log('[CHAT DEBUG] Received response:', response);
 
       // Clear timeout
       if (timeoutRef.current) {
@@ -166,6 +167,10 @@ export default function ChatConversation() {
   };
 
   const handleSendMessage = (content: string) => {
+    console.log('[CHAT DEBUG] Sending message:', content);
+    console.log('[CHAT DEBUG] Android available:', !!(window as any).Android);
+    console.log('[CHAT DEBUG] sendChatMessage exists:', !!(window as any).Android?.sendChatMessage);
+    
     // Add user message immediately
     const userMsg: Message = {
       id: `user-${Date.now()}`,
@@ -189,6 +194,7 @@ export default function ChatConversation() {
 
     // Send to Android
     if (isAndroid) {
+      console.log('[CHAT DEBUG] Calling Android.sendChatMessage');
       const sent = sendChatMessage(content);
       if (!sent) {
         // Fallback if bridge not available
