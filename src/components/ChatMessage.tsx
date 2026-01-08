@@ -7,6 +7,7 @@ interface DocumentInfo {
   documentType: string;
   personName: string;
   idNumber?: string;
+  dob?: string;
   expiryDate?: string;
 }
 
@@ -47,43 +48,48 @@ export function ChatMessage({
         </div>
       )}
 
-      {/* Message bubble */}
-      <div
-        className={cn(
-          'max-w-[75%] px-4 py-3',
-          isUser
-            ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md'
-            : 'bg-muted text-foreground rounded-2xl rounded-bl-md',
-          isThinking && 'animate-pulse'
-        )}
-      >
-        <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{content}</p>
-        
-        {/* Document Cards - Stacked Vertically */}
-        {documents && documents.length > 0 && !isUser && (
-          <div className="space-y-3 mt-1">
+      {/* Message content wrapper */}
+      <div className="max-w-[80%] flex flex-col gap-2">
+        {/* Message bubble */}
+        <div
+          className={cn(
+            'px-4 py-3',
+            isUser
+              ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md'
+              : 'bg-muted text-foreground rounded-2xl rounded-bl-md',
+            isThinking && 'animate-pulse'
+          )}
+        >
+          <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{content}</p>
+          
+          {timestamp && !isThinking && (
+            <p
+              className={cn(
+                'text-[11px] mt-2 opacity-70',
+                isUser ? 'text-right' : 'text-left'
+              )}
+            >
+              {timestamp}
+            </p>
+          )}
+        </div>
+
+        {/* Document Cards - Below bubble for assistant only */}
+        {documents && documents.length > 0 && !isUser && !isThinking && (
+          <div className="space-y-2 pl-1">
             {documents.map((doc, index) => (
               <ChatDocumentCard
                 key={doc.id || index}
+                id={doc.id}
                 documentType={doc.documentType}
                 personName={doc.personName}
                 idNumber={doc.idNumber}
+                dob={doc.dob}
                 expiryDate={doc.expiryDate}
-                onView={() => onDocumentClick?.(doc.id)}
+                onClick={() => onDocumentClick?.(doc.id)}
               />
             ))}
           </div>
-        )}
-        
-        {timestamp && !isThinking && (
-          <p
-            className={cn(
-              'text-[11px] mt-2 opacity-70',
-              isUser ? 'text-right' : 'text-left'
-            )}
-          >
-            {timestamp}
-          </p>
         )}
       </div>
 
