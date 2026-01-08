@@ -109,6 +109,15 @@ export default function ChatConversation() {
   }, [id, isAndroid, navigate]);
 
   // Set up onChatResponse callback
+  // Debug logging on mount
+  useEffect(() => {
+    console.log('[CHAT PAGE] Mounted');
+    console.log('[CHAT PAGE] window.Android exists:', !!(window as any).Android);
+    if ((window as any).Android) {
+      console.log('[CHAT PAGE] Available methods:', Object.keys((window as any).Android));
+    }
+  }, []);
+
   useEffect(() => {
     console.log('[CHAT DEBUG] Setting up onChatResponse callback');
     window.onChatResponse = (response: ChatResponse) => {
