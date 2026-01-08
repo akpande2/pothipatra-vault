@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Image, FileText, ArrowLeft, Loader2 } from 'lucide-react';
+import { Camera, Image, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useStore } from '@/hooks/useStore';
 import { DocumentType } from '@/types/document';
 import { ScanResult } from '@/hooks/useAndroidBridge';
+import { AppLayout } from '@/components/AppLayout';
 
 function mapDocType(type?: string): DocumentType {
   const t = type?.toUpperCase();
@@ -17,12 +18,11 @@ function mapDocType(type?: string): DocumentType {
   if (t === 'PASSPORT') return 'passport';
   if (t === 'DRIVING_LICENSE' || t === 'DRIVING' || t === 'DL') return 'driving';
   if (t === 'RATION_CARD' || t === 'RATION') return 'ration';
-  if (t === 'BIRTH_CERTIFICATE') return 'other'; // Map to 'other' since no specific type exists
+  if (t === 'BIRTH_CERTIFICATE') return 'other';
   return 'other';
 }
 
 function getDocLabel(type: DocumentType, rawType?: string): string {
-  // Special handling for birth certificate
   if (rawType?.toUpperCase() === 'BIRTH_CERTIFICATE') return 'BirthCert';
   
   const labels: Record<DocumentType, string> = {
@@ -58,13 +58,11 @@ export default function UploadID() {
         return;
       }
 
-      // Extract data (handle flat or nested)
       const rawType = result.doc_type || result.extraction?.doc_type || 'other';
       const docType = mapDocType(rawType);
       const idNumber = result.id_number || result.extraction?.id_number || '';
       const imageBase64 = result.image_base64 || '';
       
-      // Handle "NOT_FOUND" as empty
       let holderName = result.name || result.extraction?.name || '';
       if (holderName === 'NOT_FOUND' || holderName === 'not_found') {
         holderName = '';
@@ -72,14 +70,12 @@ export default function UploadID() {
 
       console.log('[UploadID] Extracted:', { rawType, docType, idNumber, holderName, hasImage: !!imageBase64 });
 
-      // Generate name: FirstName_DocType or just DocType
       const firstName = holderName?.split(' ')[0] || '';
       const docLabel = getDocLabel(docType, rawType);
       const docName = firstName ? `${firstName}_${docLabel}` : docLabel;
 
       console.log('[UploadID] Saving document:', { docName, docType, idNumber });
 
-      // Save document - even without id_number
       addDocument({
         type: docType,
         name: docName,
@@ -89,7 +85,7 @@ export default function UploadID() {
       });
 
       toast.success(`${docLabel} saved!`);
-      navigate('/');
+      navigate('/id-cards');
     };
 
     return () => { 
@@ -136,25 +132,85 @@ export default function UploadID() {
       });
       setIsLoading(false);
       toast.success('Uploaded');
-      navigate('/');
+      navigate('/id-cards');
     };
     reader.readAsDataURL(file);
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 bg-background border-b px-4 py-3 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
-        <h1 className="font-semibold">Upload Document</h1>
+    <AppLayout>
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-center px-4">
+          <h1 className="text-lg font-semibold text-foreground">Upload Document</h1>
+        </header>
+
+        {/* Upload Options */}
+        <div className="flex-1 p-4 space-y-3">
+          <Button 
+            variant="outline" 
+            className="w-full h-16 gap-3 justify-start px-4" 
+            onClick={() => handleSource('camera')} 
+            disabled={isLoading}
+          >
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Camera className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium">Scan with Camera</p>
+              <p className="text-xs text-muted-foreground">Take a photo of your document</p>
+            </div>
+          </Button>
+
+          <Button 
+            variant="outline" 
+            className="w-full h-16 gap-3 justify-start px-4" 
+            onClick={() => handleSource('gallery')} 
+            disabled={isLoading}
+          >
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Image className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium">Gallery</p>
+              <p className="text-xs text-muted-foreground">Choose from your photos</p>
+            </div>
+          </Button>
+
+          <Button 
+            variant="outline" 
+            className="w-full h-16 gap-3 justify-start px-4" 
+            onClick={() => handleSource('files')} 
+            disabled={isLoading}
+          >
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium">Files</p>
+              <p className="text-xs text-muted-foreground">Browse documents and PDFs</p>
+            </div>
+          </Button>
+
+          <input 
+            ref={fileInputRef} 
+            type="file" 
+            accept="image/*,application/pdf" 
+            className="hidden" 
+            onChange={handleFile} 
+          />
+        </div>
+
+        {/* Loading Overlay */}
+        {isLoading && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <Card className="p-6 flex flex-col items-center gap-3">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <p className="text-sm">{loadingMsg}</p>
+            </Card>
+          </div>
+        )}
       </div>
-      <div className="p-4 space-y-4">
-        <p className="text-xs text-muted-foreground">{isAndroid ? '🤖 Android Mode' : '🌐 Web Mode'}</p>
-        <Button className="w-full h-14 gap-3" onClick={() => handleSource('camera')} disabled={isLoading}><Camera className="h-5 w-5" />Scan with Camera</Button>
-        <Button variant="outline" className="w-full h-14 gap-3" onClick={() => handleSource('gallery')} disabled={isLoading}><Image className="h-5 w-5" />Gallery</Button>
-        <Button variant="outline" className="w-full h-14 gap-3" onClick={() => handleSource('files')} disabled={isLoading}><FileText className="h-5 w-5" />Files</Button>
-        <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFile} />
-        {isLoading && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><Card className="p-6 flex flex-col items-center gap-3"><Loader2 className="h-8 w-8 animate-spin" /><p className="text-sm">{loadingMsg}</p></Card></div>}
-      </div>
-    </div>
+    </AppLayout>
   );
 }
