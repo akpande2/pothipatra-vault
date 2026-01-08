@@ -6,26 +6,7 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useStore } from '@/hooks/useStore';
 import { DocumentType } from '@/types/document';
-
-interface ScanResult {
-  success: boolean;
-  cancelled?: boolean;
-  error?: string;
-  ocr_text?: string;
-  image_base64?: string;
-  doc_type?: string;
-  id_number?: string;
-  name?: string;
-  dob?: string;
-  extraction?: { doc_type?: string; id_number?: string; name?: string; dob?: string };
-}
-
-declare global {
-  interface Window {
-    Android?: { openScanner: () => void; openGallery: () => void; openFilePicker: () => void };
-    onScanComplete?: (result: ScanResult) => void;
-  }
-}
+import { ScanResult } from '@/hooks/useAndroidBridge';
 
 function mapDocType(type?: string): DocumentType {
   const t = type?.toUpperCase();
