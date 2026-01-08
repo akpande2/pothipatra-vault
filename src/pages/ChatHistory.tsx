@@ -1,77 +1,159 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { AppLayout } from '@/components/AppLayout';
-import { Search, MessageSquare, ChevronRight, Settings } from 'lucide-react';
+import { Search, MessageSquare, ChevronRight, Settings, Plus, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { 
+  getChatHistory, 
+  searchChatHistory, 
+  startNewChatSession,
+  isAndroidBridgeAvailable,
+  ChatSession as BridgeChatSession 
+} from '@/hooks/useAndroidBridge';
 
-interface ChatSession {
+interface DisplaySession {
   id: string;
   date: string;
   preview: string;
 }
 
-// Mock data for UI demo
-const mockSessions: ChatSession[] = [
-  {
-    id: '1',
-    date: 'Today',
-    preview: 'Show my Aadhaar card',
-  },
-  {
-    id: '2',
-    date: 'Today',
-    preview: 'What documents do I have?',
-  },
-  {
-    id: '3',
-    date: 'Yesterday',
-    preview: 'Show my PAN card details',
-  },
-  {
-    id: '4',
-    date: 'Yesterday',
-    preview: 'When does my passport expire?',
-  },
-  {
-    id: '5',
-    date: '20 Dec 2024',
-    preview: 'Find documents for Rahul',
-  },
-  {
-    id: '6',
-    date: '18 Dec 2024',
-    preview: 'Upload driving license',
-  },
-];
+function formatSessionDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  const sessionDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  if (sessionDate.getTime() === today.getTime()) {
+    return 'Today';
+  } else if (sessionDate.getTime() === yesterday.getTime()) {
+    return 'Yesterday';
+  } else {
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+}
+
+function mapToDisplaySessions(sessions: BridgeChatSession[]): DisplaySession[] {
+  return sessions.map(s => ({
+    id: s.id,
+    date: formatSessionDate(s.updatedAt || s.createdAt),
+    preview: s.title || 'New conversation',
+  }));
+}
 
 export default function ChatHistory() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [sessions, setSessions] = useState<DisplaySession[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const isAndroid = isAndroidBridgeAvailable();
 
-  // Filter sessions based on search (UI only)
-  const filteredSessions = mockSessions.filter((session) =>
-    session.preview.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Load sessions from Android bridge
+  const loadSessions = useCallback(() => {
+    if (!isAndroid) {
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const data = getChatHistory();
+      setSessions(mapToDisplaySessions(data));
+    } catch (e) {
+      console.error('[ChatHistory] Failed to load sessions:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isAndroid]);
+
+  // Initial load
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
+
+  // Refresh when page becomes visible
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        loadSessions();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [loadSessions]);
+
+  // Search with debounce
+  useEffect(() => {
+    if (!isAndroid) return;
+    
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        const results = searchChatHistory(searchQuery);
+        setSessions(mapToDisplaySessions(results));
+      } else {
+        loadSessions();
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, isAndroid, loadSessions]);
+
+  // Handle new chat
+  const handleNewChat = () => {
+    if (!isAndroid) {
+      navigate('/chat/new');
+      return;
+    }
+    
+    setIsCreating(true);
+    try {
+      const newId = startNewChatSession();
+      if (newId) {
+        navigate(`/chat/${newId}`);
+      } else {
+        navigate('/chat/new');
+      }
+    } catch (e) {
+      console.error('[ChatHistory] Failed to create session:', e);
+      navigate('/chat/new');
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   // Group sessions by date
-  const groupedSessions = filteredSessions.reduce((groups, session) => {
+  const groupedSessions = sessions.reduce((groups, session) => {
     const date = session.date;
     if (!groups[date]) {
       groups[date] = [];
     }
     groups[date].push(session);
     return groups;
-  }, {} as Record<string, ChatSession[]>);
+  }, {} as Record<string, DisplaySession[]>);
 
   return (
     <AppLayout>
       <div className="flex flex-col h-full">
         {/* Header */}
         <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-between px-4">
-          <div className="w-9" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNewChat}
+            disabled={isCreating}
+            className="w-9 h-9"
+          >
+            {isCreating ? (
+              <Loader2 className="w-[18px] h-[18px] animate-spin" />
+            ) : (
+              <Plus className="w-[18px] h-[18px]" />
+            )}
+          </Button>
           <h1 className="text-lg font-semibold text-foreground">
             Chat History
           </h1>
@@ -100,9 +182,14 @@ export default function ChatHistory() {
         {/* Chat Sessions List */}
         <ScrollArea className="flex-1">
           <div className="px-4 py-4">
-            {Object.keys(groupedSessions).length > 0 ? (
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mb-4" />
+                <p className="text-sm text-muted-foreground">Loading conversations...</p>
+              </div>
+            ) : Object.keys(groupedSessions).length > 0 ? (
               <div className="space-y-6">
-                {Object.entries(groupedSessions).map(([date, sessions]) => (
+                {Object.entries(groupedSessions).map(([date, dateSessions]) => (
                   <div key={date}>
                     {/* Date Header */}
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 px-1">
@@ -111,7 +198,7 @@ export default function ChatHistory() {
                     
                     {/* Sessions for this date */}
                     <div className="space-y-2">
-                      {sessions.map((session) => (
+                      {dateSessions.map((session) => (
                         <button
                           key={session.id}
                           onClick={() => navigate(`/chat/${session.id}`)}
@@ -134,15 +221,23 @@ export default function ChatHistory() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-fade-in">
-                <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6">
-                  <MessageSquare className="w-8 h-8 text-blue-500" />
+                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                  <MessageSquare className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   No conversations yet
                 </h3>
-                <p className="text-muted-foreground text-sm max-w-[260px] leading-relaxed">
+                <p className="text-muted-foreground text-sm max-w-[260px] leading-relaxed mb-6">
                   Start a chat to ask about your documents
                 </p>
+                <Button onClick={handleNewChat} disabled={isCreating} className="gap-2">
+                  {isCreating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4" />
+                  )}
+                  Start New Chat
+                </Button>
               </div>
             )}
           </div>
