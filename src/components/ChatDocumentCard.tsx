@@ -1,137 +1,184 @@
-import { FileText, Calendar, User, Eye, Clock, Hash } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { 
+  CreditCard, 
+  FileText, 
+  Car, 
+  Vote, 
+  BookOpen,
+  Cake,
+  User,
+  Hash
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ChatDocumentCardProps {
+  id?: string;
   documentType: string;
   personName: string;
   idNumber?: string;
+  dob?: string;
   expiryDate?: string;
-  onView?: () => void;
+  onClick?: () => void;
+}
+
+// Get icon and color based on document type
+function getDocumentStyle(type: string): { 
+  icon: React.ElementType; 
+  bgColor: string; 
+  iconColor: string;
+  borderColor: string;
+} {
+  const t = type.toLowerCase();
+  
+  if (t.includes('aadhaar')) {
+    return { 
+      icon: CreditCard, 
+      bgColor: 'bg-orange-500/10', 
+      iconColor: 'text-orange-500',
+      borderColor: 'border-orange-500/20'
+    };
+  }
+  if (t.includes('pan')) {
+    return { 
+      icon: CreditCard, 
+      bgColor: 'bg-blue-500/10', 
+      iconColor: 'text-blue-500',
+      borderColor: 'border-blue-500/20'
+    };
+  }
+  if (t.includes('voter')) {
+    return { 
+      icon: Vote, 
+      bgColor: 'bg-purple-500/10', 
+      iconColor: 'text-purple-500',
+      borderColor: 'border-purple-500/20'
+    };
+  }
+  if (t.includes('driv') || t.includes('license') || t.includes('licence')) {
+    return { 
+      icon: Car, 
+      bgColor: 'bg-green-500/10', 
+      iconColor: 'text-green-500',
+      borderColor: 'border-green-500/20'
+    };
+  }
+  if (t.includes('passport')) {
+    return { 
+      icon: BookOpen, 
+      bgColor: 'bg-red-500/10', 
+      iconColor: 'text-red-500',
+      borderColor: 'border-red-500/20'
+    };
+  }
+  if (t.includes('ration')) {
+    return { 
+      icon: FileText, 
+      bgColor: 'bg-amber-500/10', 
+      iconColor: 'text-amber-500',
+      borderColor: 'border-amber-500/20'
+    };
+  }
+  // Default
+  return { 
+    icon: FileText, 
+    bgColor: 'bg-muted', 
+    iconColor: 'text-muted-foreground',
+    borderColor: 'border-border'
+  };
 }
 
 // Mask ID number to show only last 4 digits
 function maskIdNumber(idNumber?: string): string {
-  if (!idNumber || idNumber.length < 4) return idNumber || '';
-  return '••••' + idNumber.slice(-4);
+  if (!idNumber || idNumber.length < 4) return '';
+  return '•••• ' + idNumber.slice(-4);
+}
+
+// Format DOB
+function formatDob(dob?: string): string {
+  if (!dob) return '';
+  try {
+    return new Date(dob).toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  } catch {
+    return dob;
+  }
 }
 
 export function ChatDocumentCard({ 
   documentType, 
   personName, 
   idNumber,
-  expiryDate,
-  onView 
+  dob,
+  onClick 
 }: ChatDocumentCardProps) {
-  // Check expiry status
-  const getExpiryStatus = () => {
-    if (!expiryDate) return null;
-    
-    const expiry = new Date(expiryDate);
-    const now = new Date();
-    const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (daysUntilExpiry < 0) return 'expired';
-    if (daysUntilExpiry <= 90) return 'expiring';
-    return 'valid';
-  };
-
-  const expiryStatus = getExpiryStatus();
+  const { icon: Icon, bgColor, iconColor, borderColor } = getDocumentStyle(documentType);
   const maskedId = maskIdNumber(idNumber);
+  const formattedDob = formatDob(dob);
 
   return (
-    <Card 
+    <div 
+      onClick={onClick}
       className={cn(
-        "mt-3 border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden max-w-sm cursor-pointer hover:bg-card/80 transition-colors",
-        expiryStatus === 'expiring' && "bg-amber-500/5 border-amber-500/20",
-        expiryStatus === 'expired' && "bg-destructive/5 border-destructive/20"
+        "flex items-start gap-3 p-3 rounded-xl border cursor-pointer",
+        "bg-card/80 hover:bg-card hover:shadow-sm",
+        "transition-all duration-200 active:scale-[0.98]",
+        borderColor
       )}
-      onClick={onView}
     >
-      <CardContent className="p-4">
-        {/* Document Type Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <FileText className="h-4 w-4 text-primary" />
-            </div>
-            <span className="font-semibold text-foreground">{documentType}</span>
+      {/* Document Icon */}
+      <div className={cn(
+        "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
+        bgColor
+      )}>
+        <Icon className={cn("w-5 h-5", iconColor)} />
+      </div>
+
+      {/* Document Info */}
+      <div className="flex-1 min-w-0">
+        {/* Document Type */}
+        <p className="font-medium text-sm text-foreground truncate">
+          {documentType}
+        </p>
+        
+        {/* Person Name */}
+        {personName && (
+          <div className="flex items-center gap-1.5 mt-1">
+            <User className="w-3 h-3 text-muted-foreground shrink-0" />
+            <span className="text-xs text-muted-foreground truncate">
+              {personName}
+            </span>
           </div>
-          {expiryStatus === 'expiring' && (
-            <Badge 
-              variant="outline"
-              className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30 gap-1"
-            >
-              <Clock className="w-3 h-3" />
-              Expiring Soon
-            </Badge>
-          )}
-          {expiryStatus === 'expired' && (
-            <Badge 
-              variant="outline"
-              className="text-xs bg-destructive/10 text-destructive border-destructive/30"
-            >
-              Expired
-            </Badge>
-          )}
-          {expiryStatus === 'valid' && (
-            <Badge 
-              variant="secondary"
-              className="text-xs"
-            >
-              Valid
-            </Badge>
-          )}
-        </div>
+        )}
+        
+        {/* ID Number (masked) */}
+        {maskedId && (
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <Hash className="w-3 h-3 text-muted-foreground shrink-0" />
+            <span className="text-xs text-muted-foreground font-mono">
+              {maskedId}
+            </span>
+          </div>
+        )}
 
-        {/* Document Details */}
-        <div className="space-y-2 mb-4">
-          {personName && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <User className="h-3.5 w-3.5" />
-              <span>{personName}</span>
-            </div>
-          )}
+        {/* DOB */}
+        {formattedDob && (
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <Cake className="w-3 h-3 text-muted-foreground shrink-0" />
+            <span className="text-xs text-muted-foreground">
+              {formattedDob}
+            </span>
+          </div>
+        )}
+      </div>
 
-          {maskedId && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Hash className="h-3.5 w-3.5" />
-              <span className="font-mono">{maskedId}</span>
-            </div>
-          )}
-          
-          {expiryDate && (
-            <div className={cn(
-              "flex items-center gap-2 text-sm",
-              expiryStatus === 'expiring' ? "text-amber-600" : 
-              expiryStatus === 'expired' ? "text-destructive" : "text-muted-foreground"
-            )}>
-              <Calendar className="h-3.5 w-3.5" />
-              <span>Expires: {new Date(expiryDate).toLocaleDateString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-              })}</span>
-            </div>
-          )}
-        </div>
-
-        {/* View Button */}
-        <Button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onView?.();
-          }}
-          variant="outline" 
-          size="sm" 
-          className="w-full gap-2"
-        >
-          <Eye className="h-4 w-4" />
-          View Document
-        </Button>
-      </CardContent>
-    </Card>
+      {/* Chevron */}
+      <div className="text-muted-foreground/50 shrink-0 self-center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="9,18 15,12 9,6" />
+        </svg>
+      </div>
+    </div>
   );
 }
