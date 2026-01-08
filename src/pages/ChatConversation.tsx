@@ -21,6 +21,7 @@ interface DocumentInfo {
   documentType: string;
   personName: string;
   idNumber?: string;
+  dob?: string;
   expiryDate?: string;
 }
 
@@ -129,6 +130,7 @@ export default function ChatConversation() {
           documentType: doc.type || doc.name,
           personName: (doc as any).holderName || (doc as any).personName || '',
           idNumber: (doc as any).number || (doc as any).idNumber || '',
+          dob: (doc as any).dob,
           expiryDate: (doc as any).expiryDate,
         }));
 
