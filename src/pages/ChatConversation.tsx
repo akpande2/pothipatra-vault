@@ -1,20 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { ChatMessage } from '@/components/ChatMessage';
 import { ChatInput } from '@/components/ChatInput';
-import { ChatEmptyState } from '@/components/ChatEmptyState';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import {
-  getChatMessages,
-  startNewChatSession,
-  sendChatMessage,
-  isAndroidBridgeAvailable,
-  ChatResponse,
-  ChatMessage as BridgeChatMessage,
-} from '@/hooks/useAndroidBridge';
 
 interface DocumentInfo {
   id?: string;
@@ -31,224 +22,105 @@ interface Message {
   content: string;
   timestamp: string;
   documents?: DocumentInfo[];
-  isThinking?: boolean;
 }
-
-const SUGGESTION_CHIPS = [
-  'Show all my documents',
-  'What is my Aadhaar number?',
-  'When does my passport expire?',
-  'Find documents for myself',
-  'Show my PAN card',
-];
-
-const RESPONSE_TIMEOUT = 30000; // 30 seconds
 
 export default function ChatConversation() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [sessionId, setSessionId] = useState<string | null>(id === 'new' ? null : id || null);
+  
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isWaitingResponse, setIsWaitingResponse] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [sessionId, setSessionId] = useState<string>(id || 'new');
 
-  const isAndroid = isAndroidBridgeAvailable();
-
-  // Format timestamp
-  const formatTime = () => {
-    return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-  };
-
-  // Auto-scroll to bottom
-  const scrollToBottom = useCallback(() => {
-    setTimeout(() => {
-      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  }, []);
-
-  // Load messages or create new session
+  // Load existing messages if session exists
   useEffect(() => {
-    const init = async () => {
-      setIsLoading(true);
-
-      if (id === 'new') {
-        // Create new session
-        if (isAndroid) {
-          const newId = startNewChatSession();
-          if (newId) {
-            setSessionId(newId);
-            navigate(`/chat/${newId}`, { replace: true });
-          }
-        }
-        setMessages([]);
-      } else if (id && isAndroid) {
-        // Load existing messages
-        try {
-          const existingMessages = getChatMessages(id);
-          const mapped = existingMessages.map((m: BridgeChatMessage) => ({
-            id: m.id,
-            role: m.role,
-            content: m.content,
-            timestamp: new Date(m.timestamp).toLocaleTimeString('en-IN', { 
-              hour: '2-digit', minute: '2-digit', hour12: true 
-            }),
-          }));
-          setMessages(mapped);
-        } catch (e) {
-          console.error('[ChatConversation] Failed to load messages:', e);
-        }
-      }
-
-      setIsLoading(false);
-    };
-
-    init();
-  }, [id, isAndroid, navigate]);
-
-  // Set up onChatResponse callback
-  // Debug logging on mount
-  useEffect(() => {
-    console.log('[CHAT PAGE] Mounted');
-    console.log('[CHAT PAGE] window.Android exists:', !!(window as any).Android);
-    if ((window as any).Android) {
-      console.log('[CHAT PAGE] Available methods:', Object.keys((window as any).Android));
-    }
-  }, []);
-
-  useEffect(() => {
-    console.log('[CHAT DEBUG] Setting up onChatResponse callback');
-    window.onChatResponse = (response: ChatResponse) => {
-      console.log('[CHAT DEBUG] Received response:', response);
-
-      // Clear timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-
-      setIsWaitingResponse(false);
-
-      // Remove thinking indicator and add real response
-      setMessages(prev => {
-        const withoutThinking = prev.filter(m => !m.isThinking);
-        
-        const documents: DocumentInfo[] = (response.documents || []).map(doc => ({
-          id: doc.id,
-          documentType: doc.type || doc.name,
-          personName: (doc as any).holderName || (doc as any).personName || '',
-          idNumber: (doc as any).number || (doc as any).idNumber || '',
-          dob: (doc as any).dob,
-          expiryDate: (doc as any).expiryDate,
+    if (id && id !== 'new' && window.Android?.getChatMessages) {
+      try {
+        const json = window.Android.getChatMessages(id);
+        const data = JSON.parse(json);
+        // Convert timestamp to string format
+        const formatted = data.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
         }));
+        setMessages(formatted);
+      } catch (e) {
+        console.error('Failed to load messages:', e);
+      }
+    } else if (id === 'new' && window.Android?.startNewChatSession) {
+      const newId = window.Android.startNewChatSession();
+      if (newId) {
+        setSessionId(newId);
+      }
+    }
+  }, [id]);
 
-        const assistantMsg: Message = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: response.message,
-          timestamp: formatTime(),
-          documents: documents.length > 0 ? documents : undefined,
-        };
-
-        return [...withoutThinking, assistantMsg];
-      });
-
-      scrollToBottom();
+  // Set up response callback
+  useEffect(() => {
+    window.onChatResponse = (response: any) => {
+      console.log('[CHAT] Response received:', response);
+      
+      const assistantMsg: Message = {
+        id: `msg_${Date.now()}`,
+        role: 'assistant',
+        content: response.message,
+        timestamp: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+        documents: response.documents?.map((doc: any) => ({
+          id: doc.id,
+          documentType: doc.documentType,
+          personName: doc.personName,
+          idNumber: doc.idNumber,
+          dob: doc.dob
+        }))
+      };
+      
+      setMessages(prev => [...prev, assistantMsg]);
+      setIsSending(false);
     };
 
     return () => {
       window.onChatResponse = undefined;
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
     };
-  }, [scrollToBottom]);
+  }, []);
 
-  // Auto-scroll when messages change
+  // Auto-scroll to bottom
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const handleBack = () => {
     navigate('/chat-history');
   };
 
   const handleSendMessage = (content: string) => {
-    console.log('[CHAT DEBUG] Sending message:', content);
-    console.log('[CHAT DEBUG] Android available:', !!(window as any).Android);
-    console.log('[CHAT DEBUG] sendChatMessage exists:', !!(window as any).Android?.sendChatMessage);
-    
-    // Add user message immediately
+    if (!content.trim() || isSending) return;
+
+    // Add user message
     const userMsg: Message = {
-      id: `user-${Date.now()}`,
+      id: `msg_${Date.now()}`,
       role: 'user',
-      content,
-      timestamp: formatTime(),
+      content: content.trim(),
+      timestamp: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
     };
-
-    // Add thinking indicator
-    const thinkingMsg: Message = {
-      id: `thinking-${Date.now()}`,
-      role: 'assistant',
-      content: 'Thinking...',
-      timestamp: formatTime(),
-      isThinking: true,
-    };
-
-    setMessages(prev => [...prev, userMsg, thinkingMsg]);
-    setIsWaitingResponse(true);
-    scrollToBottom();
+    
+    setMessages(prev => [...prev, userMsg]);
+    setIsSending(true);
 
     // Send to Android
-    if (isAndroid) {
-      console.log('[CHAT DEBUG] Calling Android.sendChatMessage');
-      const sent = sendChatMessage(content);
-      if (!sent) {
-        // Fallback if bridge not available
-        setMessages(prev => prev.filter(m => !m.isThinking));
-        setIsWaitingResponse(false);
-      } else {
-        // Set timeout fallback
-        timeoutRef.current = setTimeout(() => {
-          console.warn('[ChatConversation] Response timeout');
-          setMessages(prev => {
-            const withoutThinking = prev.filter(m => !m.isThinking);
-            return [...withoutThinking, {
-              id: `timeout-${Date.now()}`,
-              role: 'assistant',
-              content: 'Sorry, I took too long to respond. Please try again.',
-              timestamp: formatTime(),
-            }];
-          });
-          setIsWaitingResponse(false);
-        }, RESPONSE_TIMEOUT);
-      }
+    if (window.Android?.sendChatMessage) {
+      console.log('[CHAT] Sending to Android:', content);
+      window.Android.sendChatMessage(content.trim());
     } else {
-      // Web fallback - just echo
-      setTimeout(() => {
-        setMessages(prev => {
-          const withoutThinking = prev.filter(m => !m.isThinking);
-          return [...withoutThinking, {
-            id: `echo-${Date.now()}`,
-            role: 'assistant',
-            content: `I received: "${content}". (Android bridge not available)`,
-            timestamp: formatTime(),
-          }];
-        });
-        setIsWaitingResponse(false);
-      }, 1000);
-    }
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    handleSendMessage(suggestion);
-  };
-
-  const handleDocumentClick = (docId?: string) => {
-    if (docId) {
-      navigate(`/dashboard?doc=${docId}`);
+      // Fallback for non-Android
+      setIsSending(false);
+      const fallbackMsg: Message = {
+        id: `msg_${Date.now()}_fallback`,
+        role: 'assistant',
+        content: 'Chat is only available in the Android app.',
+        timestamp: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, fallbackMsg]);
     }
   };
 
@@ -257,58 +129,59 @@ export default function ChatConversation() {
       <div className="flex flex-col h-full">
         {/* Header */}
         <header className="px-4 py-4 border-b border-border bg-background/90 backdrop-blur-sm flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBack}
-            className="shrink-0"
-          >
+          <Button variant="ghost" size="icon" onClick={handleBack} className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 text-center pr-10">
-            <h1 className="text-lg font-semibold text-foreground">
-              {isAndroid ? 'AI Assistant' : 'Chat'}
-            </h1>
+            <h1 className="text-lg font-semibold text-foreground">Chat</h1>
           </div>
         </header>
 
-        {/* Message Area */}
+        {/* Messages */}
         <ScrollArea className="flex-1">
-          <div className="px-4 py-8 min-h-full">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : messages.length === 0 ? (
-              <ChatEmptyState
-                suggestions={SUGGESTION_CHIPS}
-                onSuggestionClick={handleSuggestionClick}
-              />
-            ) : (
-              <div className="space-y-6 max-w-2xl mx-auto">
-                {messages.map((message) => (
-                  <ChatMessage
-                    key={message.id}
-                    role={message.role}
-                    content={message.content}
-                    timestamp={message.timestamp}
-                    documents={message.documents}
-                    isThinking={message.isThinking}
-                    onDocumentClick={handleDocumentClick}
-                  />
-                ))}
-                <div ref={scrollRef} />
-              </div>
-            )}
+          <div className="px-4 py-6 min-h-full">
+            <div className="space-y-4 max-w-2xl mx-auto">
+              {messages.length === 0 && !isSending && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p className="mb-4">Ask me about your documents</p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {['Show all documents', 'What is my Aadhaar number?'].map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        onClick={() => handleSendMessage(suggestion)}
+                        className="px-3 py-2 text-sm bg-muted rounded-full hover:bg-muted/80"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  role={message.role}
+                  content={message.content}
+                  timestamp={message.timestamp}
+                  documents={message.documents}
+                />
+              ))}
+              
+              {isSending && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Thinking...</span>
+                </div>
+              )}
+              
+              <div ref={scrollRef} />
+            </div>
           </div>
         </ScrollArea>
 
-        {/* Chat Input */}
-        <ChatInput 
-          onSend={handleSendMessage} 
-          placeholder="Ask about your documents…" 
-          disabled={isWaitingResponse}
-        />
+        {/* Input */}
+        <ChatInput onSend={handleSendMessage} placeholder="Ask about your documents..." />
       </div>
     </AppLayout>
   );
