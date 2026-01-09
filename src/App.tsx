@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { useNativeBridge } from "@/hooks/useNativeBridge";
 import { BottomNav } from "@/components/BottomNav";
+import { DocumentApprovalModal } from '@/components/DocumentApprovalModal';
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -57,6 +58,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <DocumentApprovalModal />
         <BrowserRouter>
           <AppContent />
         </BrowserRouter>
