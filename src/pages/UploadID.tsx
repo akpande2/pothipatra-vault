@@ -8,23 +8,22 @@ import { useStore } from '@/hooks/useStore';
 import { DocumentType } from '@/types/document';
 import { ScanResult } from '@/hooks/useAndroidBridge';
 import { AppLayout } from '@/components/AppLayout';
+// 1. ADD THIS IMPORT
+import { DocumentApprovalModal } from '@/components/DocumentApprovalModal';
 
 function mapDocType(type?: string): DocumentType {
   const t = type?.toUpperCase();
-  console.log('[UploadID] mapDocType input:', type, '-> upper:', t);
   if (t === 'AADHAAR') return 'aadhaar';
   if (t === 'PAN') return 'pan';
   if (t === 'VOTER_ID' || t === 'VOTER') return 'voter';
   if (t === 'PASSPORT') return 'passport';
   if (t === 'DRIVING_LICENSE' || t === 'DRIVING' || t === 'DL') return 'driving';
   if (t === 'RATION_CARD' || t === 'RATION') return 'ration';
-  if (t === 'BIRTH_CERTIFICATE') return 'other';
   return 'other';
 }
 
 function getDocLabel(type: DocumentType, rawType?: string): string {
   if (rawType?.toUpperCase() === 'BIRTH_CERTIFICATE') return 'BirthCert';
-  
   const labels: Record<DocumentType, string> = {
     aadhaar: 'Aadhaar', pan: 'PAN', passport: 'Passport',
     driving: 'DL', voter: 'VoterID', ration: 'Ration', other: 'Document'
@@ -38,22 +37,20 @@ export default function UploadID() {
   const { addDocument } = useStore();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
+  
+  // 2. ADD THIS STATE
+  const [isApprovalOpen, setIsApprovalOpen] = useState(false);
+  
   const isAndroid = typeof window !== 'undefined' && !!window.Android;
 
   useEffect(() => {
-    console.log('[UploadID] Setting up onScanComplete callback');
+    console.log('[UploadID] Setting up bridge callbacks');
     
+    // Existing scan complete logic
     window.onScanComplete = (result: ScanResult) => {
-      console.log('[UploadID] onScanComplete received:', JSON.stringify(result, null, 2));
       setIsLoading(false);
-      
-      if (result.cancelled) {
-        console.log('[UploadID] Scan cancelled');
-        return;
-      }
-      
+      if (result.cancelled) return;
       if (!result.success) {
-        console.log('[UploadID] Scan failed:', result.error);
         toast.error(result.error || 'Failed');
         return;
       }
@@ -62,19 +59,12 @@ export default function UploadID() {
       const docType = mapDocType(rawType);
       const idNumber = result.id_number || result.extraction?.id_number || '';
       const imageBase64 = result.image_base64 || '';
-      
       let holderName = result.name || result.extraction?.name || '';
-      if (holderName === 'NOT_FOUND' || holderName === 'not_found') {
-        holderName = '';
-      }
-
-      console.log('[UploadID] Extracted:', { rawType, docType, idNumber, holderName, hasImage: !!imageBase64 });
+      if (holderName === 'NOT_FOUND' || holderName === 'not_found') holderName = '';
 
       const firstName = holderName?.split(' ')[0] || '';
       const docLabel = getDocLabel(docType, rawType);
       const docName = firstName ? `${firstName}_${docLabel}` : docLabel;
-
-      console.log('[UploadID] Saving document:', { docName, docType, idNumber });
 
       addDocument({
         type: docType,
@@ -88,26 +78,34 @@ export default function UploadID() {
       navigate('/id-cards');
     };
 
+    // 3. ADD THESE NEW CALLBACKS
+    window.onDocumentPreview = () => {
+      setIsLoading(false); // Stop any loading spinners
+      setIsApprovalOpen(true);
+    };
+
+    window.onProcessingError = (error: any) => {
+      setIsLoading(false);
+      console.error('Processing error:', error);
+      toast.error(typeof error === 'string' ? error : 'AI Processing failed');
+    };
+
     return () => { 
-      console.log('[UploadID] Cleaning up onScanComplete callback');
+      console.log('[UploadID] Cleaning up bridge callbacks');
       window.onScanComplete = undefined; 
+      window.onDocumentPreview = undefined;
+      window.onProcessingError = undefined;
     };
   }, [navigate, addDocument]);
 
   const handleSource = (src: string) => {
-    console.log('[UploadID] handleSource:', src, 'isAndroid:', isAndroid);
-    
     if (isAndroid && window.Android) {
       setIsLoading(true);
       setLoadingMsg(src === 'camera' ? 'Opening camera...' : 'Processing...');
-      
-      console.log('[UploadID] Calling Android.' + (src === 'camera' ? 'openScanner' : src === 'gallery' ? 'openGallery' : 'openFilePicker') + '()');
-      
       if (src === 'camera') window.Android.openScanner();
       else if (src === 'gallery') window.Android.openGallery();
       else window.Android.openFilePicker();
     } else {
-      console.log('[UploadID] Using web file input');
       fileInputRef.current?.click();
     }
   };
@@ -115,14 +113,10 @@ export default function UploadID() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    console.log('[UploadID] Web file selected:', file.name, file.type);
     setIsLoading(true);
     setLoadingMsg('Processing...');
-    
     const reader = new FileReader();
     reader.onload = () => {
-      console.log('[UploadID] File read complete');
       addDocument({
         type: 'other',
         name: file.name.replace(/\.[^/.]+$/, ''),
@@ -140,12 +134,10 @@ export default function UploadID() {
   return (
     <AppLayout>
       <div className="flex flex-col h-full">
-        {/* Header */}
         <header className="h-14 border-b border-border bg-background/95 backdrop-blur-sm flex items-center justify-center px-4">
           <h1 className="text-lg font-semibold text-foreground">Upload Document</h1>
         </header>
 
-        {/* Upload Options */}
         <div className="flex-1 p-4 space-y-3">
           <Button 
             variant="outline" 
@@ -210,6 +202,12 @@ export default function UploadID() {
             </Card>
           </div>
         )}
+
+        {/* 4. ADD THE MODAL COMPONENT HERE */}
+        <DocumentApprovalModal 
+          isOpen={isApprovalOpen} 
+          onClose={() => setIsApprovalOpen(false)} 
+        />
       </div>
     </AppLayout>
   );
