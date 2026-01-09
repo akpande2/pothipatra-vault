@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/upload', icon: Upload, label: 'Upload' },
-  { path: '/id-cards', icon: FolderOpen, label: 'ID Cards' },
   { path: '/chat/new', icon: MessageCircle, label: 'Chat' },
   { path: '/chat-history', icon: Clock, label: 'History' },
   { path: '/documents', icon: Folder, label: 'Documents' },
