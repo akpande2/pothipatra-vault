@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { useNativeBridge } from "@/hooks/useNativeBridge";
+import { BottomNav } from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -28,22 +29,25 @@ const AppContent = () => {
   useNativeBridge(); // Start listening for Android messages
 
   return (
-    <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/id-cards" element={<IDCards />} />
-      <Route path="/upload" element={<UploadID />} />
-      <Route path="/chat-history" element={<ChatHistory />} />
-      <Route path="/chat/:id" element={<ChatConversation />} />
-      <Route path="/privacy" element={<PrivacyTrust />} />
-      <Route path="/reminders" element={<Reminders />} />
-      <Route path="/notifications" element={<NotificationSettings />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/documents" element={<Documents />} />
-      <Route path="/document/:id" element={<DocumentDetail />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/id-cards" element={<IDCards />} />
+        <Route path="/upload" element={<UploadID />} />
+        <Route path="/chat-history" element={<ChatHistory />} />
+        <Route path="/chat/:id" element={<ChatConversation />} />
+        <Route path="/privacy" element={<PrivacyTrust />} />
+        <Route path="/reminders" element={<Reminders />} />
+        <Route path="/notifications" element={<NotificationSettings />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/documents" element={<Documents />} />
+        <Route path="/document/:id" element={<DocumentDetail />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <BottomNav />
+    </>
   );
 };
 
