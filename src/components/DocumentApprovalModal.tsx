@@ -30,12 +30,8 @@ interface DocumentPreview {
   subcategories: CategoryOption[];
 }
 
-interface Props {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export function DocumentApprovalModal({ isOpen, onClose }: Props) {
+export function DocumentApprovalModal() {
+  const [isOpen, setIsOpen] = useState(false);
   const [preview, setPreview] = useState<DocumentPreview | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,25 +40,26 @@ export function DocumentApprovalModal({ isOpen, onClose }: Props) {
   useEffect(() => {
     // Listen for document preview from Android
     window.onDocumentPreview = (data: DocumentPreview) => {
-      console.log('[Approval] Received preview:', data);
+      console.log('[Approval] Received preview, opening modal');
       setPreview(data);
       setEditedData({});
       setIsEditing(false);
       setIsLoading(false);
+      setIsOpen(true);  // Open modal
     };
 
     window.onDocumentApproved = (response: any) => {
       console.log('[Approval] Document approved:', response);
       setIsLoading(false);
       setPreview(null);
-      onClose();
+      setIsOpen(false);  // Close modal
     };
 
     window.onDocumentRejected = () => {
       console.log('[Approval] Document rejected');
       setIsLoading(false);
       setPreview(null);
-      onClose();
+      setIsOpen(false);  // Close modal
     };
 
     window.onApprovalError = (error: any) => {
@@ -76,19 +73,23 @@ export function DocumentApprovalModal({ isOpen, onClose }: Props) {
       window.onDocumentRejected = undefined;
       window.onApprovalError = undefined;
     };
-  }, [onClose]);
+  }, []);
 
   const handleApprove = () => {
-    if (!window.Android?.approveDocument) return;
+    if (!window.Android?.approveDocument) {
+      console.error('Android bridge not available');
+      return;
+    }
     setIsLoading(true);
     window.Android.approveDocument();
   };
 
   const handleReject = () => {
-    if (!window.Android?.rejectDocument) return;
-    window.Android.rejectDocument();
+    if (window.Android?.rejectDocument) {
+      window.Android.rejectDocument();
+    }
     setPreview(null);
-    onClose();
+    setIsOpen(false);
   };
 
   const handleEdit = () => {
@@ -104,8 +105,9 @@ export function DocumentApprovalModal({ isOpen, onClose }: Props) {
   };
 
   const handleSaveEdit = () => {
-    if (!window.Android?.editDocument) return;
-    window.Android.editDocument(JSON.stringify(editedData));
+    if (window.Android?.editDocument) {
+      window.Android.editDocument(JSON.stringify(editedData));
+    }
     setIsEditing(false);
   };
 
@@ -114,12 +116,18 @@ export function DocumentApprovalModal({ isOpen, onClose }: Props) {
     setEditedData({});
   };
 
+  const handleClose = () => {
+    if (!isLoading) {
+      handleReject();
+    }
+  };
+
   if (!preview) return null;
 
   const confidencePercent = Math.round((preview.confidence || 0) * 100);
 
   return (
-    <Dialog open={isOpen && !!preview} onOpenChange={() => !isLoading && onClose()}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
