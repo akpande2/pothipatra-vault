@@ -9,8 +9,13 @@ export default function Documents() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Page Header */}
+      <div className="sticky top-0 z-10 bg-background border-b p-4">
+        <h1 className="text-lg font-semibold">Saved Documents</h1>
+      </div>
+
       {/* Tab Switcher */}
-      <div className="sticky top-0 z-10 bg-background border-b">
+      <div className="border-b">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full justify-start rounded-none border-b-0 h-12 p-0 bg-transparent">
             <TabsTrigger 
