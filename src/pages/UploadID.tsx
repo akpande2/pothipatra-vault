@@ -1,35 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Image, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useStore } from '@/hooks/useStore';
-import { DocumentType } from '@/types/document';
-import { ScanResult } from '@/hooks/useAndroidBridge';
 import { AppLayout } from '@/components/AppLayout';
-// 1. ADD THIS IMPORT
-import { DocumentApprovalModal } from '@/components/DocumentApprovalModal';
-
-function mapDocType(type?: string): DocumentType {
-  const t = type?.toUpperCase();
-  if (t === 'AADHAAR') return 'aadhaar';
-  if (t === 'PAN') return 'pan';
-  if (t === 'VOTER_ID' || t === 'VOTER') return 'voter';
-  if (t === 'PASSPORT') return 'passport';
-  if (t === 'DRIVING_LICENSE' || t === 'DRIVING' || t === 'DL') return 'driving';
-  if (t === 'RATION_CARD' || t === 'RATION') return 'ration';
-  return 'other';
-}
-
-function getDocLabel(type: DocumentType, rawType?: string): string {
-  if (rawType?.toUpperCase() === 'BIRTH_CERTIFICATE') return 'BirthCert';
-  const labels: Record<DocumentType, string> = {
-    aadhaar: 'Aadhaar', pan: 'PAN', passport: 'Passport',
-    driving: 'DL', voter: 'VoterID', ration: 'Ration', other: 'Document'
-  };
-  return labels[type];
-}
 
 export default function UploadID() {
   const navigate = useNavigate();
@@ -38,73 +14,20 @@ export default function UploadID() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
   
-  // 2. ADD THIS STATE
-  const [isApprovalOpen, setIsApprovalOpen] = useState(false);
-  
   const isAndroid = typeof window !== 'undefined' && !!window.Android;
-
-  useEffect(() => {
-    console.log('[UploadID] Setting up bridge callbacks');
-    
-    // Existing scan complete logic
-    window.onScanComplete = (result: ScanResult) => {
-      setIsLoading(false);
-      if (result.cancelled) return;
-      if (!result.success) {
-        toast.error(result.error || 'Failed');
-        return;
-      }
-
-      const rawType = result.doc_type || result.extraction?.doc_type || 'other';
-      const docType = mapDocType(rawType);
-      const idNumber = result.id_number || result.extraction?.id_number || '';
-      const imageBase64 = result.image_base64 || '';
-      let holderName = result.name || result.extraction?.name || '';
-      if (holderName === 'NOT_FOUND' || holderName === 'not_found') holderName = '';
-
-      const firstName = holderName?.split(' ')[0] || '';
-      const docLabel = getDocLabel(docType, rawType);
-      const docName = firstName ? `${firstName}_${docLabel}` : docLabel;
-
-      addDocument({
-        type: docType,
-        name: docName,
-        number: idNumber,
-        holderName: holderName,
-        frontImage: imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : undefined,
-      });
-
-      toast.success(`${docLabel} saved!`);
-      navigate('/id-cards');
-    };
-
-    // 3. ADD THESE NEW CALLBACKS
-    window.onDocumentPreview = () => {
-      setIsLoading(false); // Stop any loading spinners
-      setIsApprovalOpen(true);
-    };
-
-    window.onProcessingError = (error: any) => {
-      setIsLoading(false);
-      console.error('Processing error:', error);
-      toast.error(typeof error === 'string' ? error : 'AI Processing failed');
-    };
-
-    return () => { 
-      console.log('[UploadID] Cleaning up bridge callbacks');
-      window.onScanComplete = undefined; 
-      window.onDocumentPreview = undefined;
-      window.onProcessingError = undefined;
-    };
-  }, [navigate, addDocument]);
 
   const handleSource = (src: string) => {
     if (isAndroid && window.Android) {
       setIsLoading(true);
       setLoadingMsg(src === 'camera' ? 'Opening camera...' : 'Processing...');
+      
+      // Just call Android methods - DocumentApprovalModal handles the response
       if (src === 'camera') window.Android.openScanner();
       else if (src === 'gallery') window.Android.openGallery();
       else window.Android.openFilePicker();
+      
+      // Stop loading after a short delay (modal will handle the rest)
+      setTimeout(() => setIsLoading(false), 2000);
     } else {
       fileInputRef.current?.click();
     }
@@ -126,7 +49,7 @@ export default function UploadID() {
       });
       setIsLoading(false);
       toast.success('Uploaded');
-      navigate('/id-cards');
+      navigate('/documents');
     };
     reader.readAsDataURL(file);
   };
@@ -202,12 +125,8 @@ export default function UploadID() {
             </Card>
           </div>
         )}
-
-        {/* 4. ADD THE MODAL COMPONENT HERE */}
-        <DocumentApprovalModal 
-          isOpen={isApprovalOpen} 
-          onClose={() => setIsApprovalOpen(false)} 
-        />
+        
+        {/* NO MODAL HERE - It's in App.tsx */}
       </div>
     </AppLayout>
   );
