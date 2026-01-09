@@ -1,13 +1,13 @@
-import { Upload, FolderOpen, MessageCircle, Clock } from 'lucide-react';
+import { Upload, FolderOpen, MessageCircle, Clock, Folder } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/upload', icon: Upload, label: 'Upload' },
-  { path: '/id-cards', icon: FolderOpen, label: 'Documents' },
+  { path: '/id-cards', icon: FolderOpen, label: 'ID Cards' },
   { path: '/chat/new', icon: MessageCircle, label: 'Chat' },
   { path: '/chat-history', icon: Clock, label: 'History' },
-  { label: 'Documents', icon: Folder, path: '/documents'},
+  { path: '/documents', icon: Folder, label: 'Documents' },
 ];
 
 export function BottomNav() {

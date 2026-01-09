@@ -1,6 +1,3 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Documents from '@/pages/Documents';
-import DocumentDetail from '@/pages/DocumentDetail';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,18 +18,8 @@ import PrivacyTrust from "./pages/PrivacyTrust";
 import Reminders from "./pages/Reminders";
 import NotificationSettings from "./pages/NotificationSettings";
 import About from "./pages/About";
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        {/* ... existing routes */}
-        <Route path="/documents" element={<Documents />} />
-        <Route path="/document/:id" element={<DocumentDetail />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
+import Documents from "@/pages/Documents";
+import DocumentDetail from "@/pages/DocumentDetail";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +40,8 @@ const AppContent = () => {
       <Route path="/notifications" element={<NotificationSettings />} />
       <Route path="/about" element={<About />} />
       <Route path="/settings" element={<Settings />} />
+      <Route path="/documents" element={<Documents />} />
+      <Route path="/document/:id" element={<DocumentDetail />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
