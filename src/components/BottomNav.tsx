@@ -7,6 +7,7 @@ const navItems = [
   { path: '/id-cards', icon: FolderOpen, label: 'Documents' },
   { path: '/chat/new', icon: MessageCircle, label: 'Chat' },
   { path: '/chat-history', icon: Clock, label: 'History' },
+  { label: 'Documents', icon: Folder, path: '/documents'},
 ];
 
 export function BottomNav() {
