@@ -65,6 +65,7 @@ interface AndroidBridge {
   openFilePicker(): void;
   getCapabilities?(): string;
   isAIReady?(): boolean;
+  isReady?(): boolean;
   validateAadhaar?(uid: string): boolean;
   
   // Chat methods
@@ -78,6 +79,27 @@ interface AndroidBridge {
   // Document methods
   getAllDocuments?(): string;
   getDocument?(documentId: string): string;
+  getDocumentImage?(documentId: string): string;
+  deleteDocument?(documentId: string): boolean;
+  searchDocuments?(query: string): string;
+  getDocumentsByCategory?(category: string): string;
+  getDocumentsBySubcategory?(subcategory: string): string;
+  
+  // Approval flow
+  approveDocument?(): void;
+  rejectDocument?(): void;
+  editDocument?(changesJson: string): void;
+  getPendingDocument?(): string;
+  
+  // Category/Folder methods
+  getCategories?(): string;
+  getSubcategories?(category: string): string;
+  
+  // Person methods
+  getAllPersons?(): string;
+  getPerson?(personId: string): string;
+  getDocumentsByPerson?(personId: string): string;
+  mergePersons?(keepPersonId: string, mergePersonId: string): boolean;
 }
 
 // Global Window interface declaration
@@ -87,6 +109,11 @@ declare global {
     onFileSelected?: (data: AndroidFileData) => void;
     onScanComplete?: (result: ScanResult) => void;
     onChatResponse?: (response: ChatResponse) => void;
+    onDocumentPreview?: (preview: any) => void;
+    onDocumentApproved?: (response: any) => void;
+    onDocumentRejected?: () => void;
+    onProcessingError?: (error: any) => void;
+    onApprovalError?: (error: any) => void;
   }
 }
 
