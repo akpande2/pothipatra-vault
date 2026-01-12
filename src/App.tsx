@@ -23,6 +23,9 @@ import About from "./pages/About";
 import Documents from "@/pages/Documents";
 import DocumentDetail from "@/pages/DocumentDetail";
 import PersonProfilePage from '@/pages/PersonProfile';
+import PersonDocuments from '@/pages/PersonDocuments';
+import PersonProfilePage from '@/pages/PersonProfile';
+
 
 const queryClient = new QueryClient();
 
@@ -48,6 +51,8 @@ const AppContent = () => {
         <Route path="/document/:id" element={<DocumentDetail />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/person/:id" element={<PersonProfilePage />} />
+        <Route path="/person/:id" element={<PersonDocuments />} />
+        <Route path="/person/:id/profile" element={<PersonProfilePage />} />
       </Routes>
       <BottomNav />
     </>
