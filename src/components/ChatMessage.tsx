@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { User, Bot, Loader2 } from 'lucide-react';
-import { ChatDocumentCard } from './ChatDocumentCard';
+import { ChatDocumentAttachments } from './ChatDocumentAttachments';
 
 interface DocumentInfo {
   id?: string;
@@ -9,6 +9,11 @@ interface DocumentInfo {
   idNumber?: string;
   dob?: string;
   expiryDate?: string;
+  subcategoryDisplay?: string;
+  referenceNumber?: string;
+  date?: string;
+  summary?: string;
+  isValid?: boolean;
 }
 
 interface ChatMessageProps {
@@ -17,7 +22,6 @@ interface ChatMessageProps {
   timestamp?: string;
   documents?: DocumentInfo[];
   isThinking?: boolean;
-  onDocumentClick?: (docId?: string) => void;
 }
 
 export function ChatMessage({ 
@@ -25,8 +29,7 @@ export function ChatMessage({
   content, 
   timestamp, 
   documents, 
-  isThinking,
-  onDocumentClick 
+  isThinking
 }: ChatMessageProps) {
   const isUser = role === 'user';
 
@@ -49,7 +52,7 @@ export function ChatMessage({
       )}
 
       {/* Message content wrapper */}
-      <div className="max-w-[80%] flex flex-col gap-2">
+      <div className="max-w-[85%] flex flex-col gap-2">
         {/* Message bubble */}
         <div
           className={cn(
@@ -74,22 +77,9 @@ export function ChatMessage({
           )}
         </div>
 
-        {/* Document Cards - Below bubble for assistant only */}
+        {/* Document Cards with Preview Modal - Below bubble for assistant only */}
         {documents && documents.length > 0 && !isUser && !isThinking && (
-          <div className="space-y-2 pl-1">
-            {documents.map((doc, index) => (
-              <ChatDocumentCard
-                key={doc.id || index}
-                id={doc.id}
-                documentType={doc.documentType}
-                personName={doc.personName}
-                idNumber={doc.idNumber}
-                dob={doc.dob}
-                expiryDate={doc.expiryDate}
-                onClick={() => onDocumentClick?.(doc.id)}
-              />
-            ))}
-          </div>
+          <ChatDocumentAttachments documents={documents} />
         )}
       </div>
 
