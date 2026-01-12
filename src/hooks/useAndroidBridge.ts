@@ -98,8 +98,19 @@ interface AndroidBridge {
   // Person methods
   getAllPersons?(): string;
   getPerson?(personId: string): string;
+  getPersons?(): string;
   getDocumentsByPerson?(personId: string): string;
+  getDocumentsForPerson?(personId: string): string;
   mergePersons?(keepPersonId: string, mergePersonId: string): boolean;
+  
+  // Profile methods
+  getProfile?(personId: string): string;
+  updateProfile?(personId: string, profileJson: string): boolean;
+  getRelationships?(): string;
+  setPrimaryUser?(personId: string): void;
+  
+  // Document view
+  viewDocument?(documentId: string): void;
 }
 
 // Global Window interface declaration
@@ -110,6 +121,7 @@ declare global {
     onScanComplete?: (result: ScanResult) => void;
     onChatResponse?: (response: ChatResponse) => void;
     onDocumentPreview?: (preview: any) => void;
+    onDocumentView?: (data: any) => void;
     onDocumentApproved?: (response: any) => void;
     onDocumentRejected?: () => void;
     onProcessingError?: (error: any) => void;

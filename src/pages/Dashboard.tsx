@@ -10,9 +10,17 @@ import { Settings } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 interface DocumentInfo {
-  documentType: string;
-  personName: string;
+  id: string;
+  documentType?: string;
+  personName?: string;
+  idNumber?: string;
+  dob?: string;
   expiryDate?: string;
+  subcategoryDisplay?: string;
+  referenceNumber?: string;
+  date?: string;
+  summary?: string;
+  isValid?: boolean;
 }
 
 interface Message {
@@ -67,13 +75,13 @@ export default function Dashboard() {
                     : "I don't see this document yet. You can upload it.",
                 documents: hasAll
                   ? [
-                      { documentType: "Aadhaar Card", personName: "Rahul Sharma" },
-                      { documentType: "PAN Card", personName: "Rahul Sharma" },
-                      { documentType: "Driving Licence", personName: "Rahul Sharma", expiryDate: "2025-02-15" },
-                      { documentType: "Passport", personName: "Rahul Sharma", expiryDate: "2028-05-15" }
+                      { id: "demo-1", documentType: "Aadhaar Card", personName: "Rahul Sharma" },
+                      { id: "demo-2", documentType: "PAN Card", personName: "Rahul Sharma" },
+                      { id: "demo-3", documentType: "Driving Licence", personName: "Rahul Sharma", expiryDate: "2025-02-15" },
+                      { id: "demo-4", documentType: "Passport", personName: "Rahul Sharma", expiryDate: "2028-05-15" }
                     ]
                   : hasAadhaar 
-                    ? [{ documentType: "Aadhaar Card", personName: "Rahul Sharma" }]
+                    ? [{ id: "demo-aadhaar", documentType: "Aadhaar Card", personName: "Rahul Sharma" }]
                     : undefined
               }
             : msg
