@@ -22,6 +22,7 @@ import NotificationSettings from "./pages/NotificationSettings";
 import About from "./pages/About";
 import Documents from "@/pages/Documents";
 import DocumentDetail from "@/pages/DocumentDetail";
+import PersonProfilePage from '@/pages/PersonProfile';
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const AppContent = () => {
         <Route path="/documents" element={<Documents />} />
         <Route path="/document/:id" element={<DocumentDetail />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/person/:id" element={<PersonProfilePage />} />
       </Routes>
       <BottomNav />
     </>
