@@ -8,12 +8,17 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 interface DocumentInfo {
-  id?: string;
-  documentType: string;
-  personName: string;
+  id: string;
+  documentType?: string;
+  personName?: string;
   idNumber?: string;
   dob?: string;
   expiryDate?: string;
+  subcategoryDisplay?: string;
+  referenceNumber?: string;
+  date?: string;
+  summary?: string;
+  isValid?: boolean;
 }
 
 interface Message {

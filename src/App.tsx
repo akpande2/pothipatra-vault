@@ -24,7 +24,6 @@ import Documents from "@/pages/Documents";
 import DocumentDetail from "@/pages/DocumentDetail";
 import PersonProfilePage from '@/pages/PersonProfile';
 import PersonDocuments from '@/pages/PersonDocuments';
-import PersonProfilePage from '@/pages/PersonProfile';
 import { DocumentViewModal } from '@/components/DocumentViewModal';
 
 

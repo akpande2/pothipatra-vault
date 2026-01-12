@@ -3,9 +3,9 @@ import { User, Bot, Loader2 } from 'lucide-react';
 import { ChatDocumentAttachments } from './ChatDocumentAttachments';
 
 interface DocumentInfo {
-  id?: string;
-  documentType: string;
-  personName: string;
+  id: string;
+  documentType?: string;
+  personName?: string;
   idNumber?: string;
   dob?: string;
   expiryDate?: string;
