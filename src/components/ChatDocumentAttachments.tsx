@@ -54,7 +54,11 @@ export function ChatDocumentAttachments({ documents }: Props) {
         {documents.map((doc) => (
           <ChatDocumentCard
             key={doc.id}
-            document={doc}
+            id={doc.id}
+            documentType={doc.subcategoryDisplay || doc.documentType || 'Document'}
+            personName={doc.personName || ''}
+            idNumber={doc.idNumber || doc.referenceNumber}
+            dob={doc.dob}
             onClick={() => handleDocumentClick(doc)}
           />
         ))}
