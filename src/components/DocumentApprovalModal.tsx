@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, X, Edit2, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Check, X, Edit2, Loader2, AlertCircle, CheckCircle, Pencil } from 'lucide-react';
+import { ImageEditor } from './ImageEditor';
 
 interface CategoryOption {
   id: string;
@@ -34,32 +35,35 @@ export function DocumentApprovalModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [preview, setPreview] = useState<DocumentPreview | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingImage, setIsEditingImage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editedData, setEditedData] = useState<Partial<DocumentPreview>>({});
+  const [editedImageBase64, setEditedImageBase64] = useState<string>('');
 
   useEffect(() => {
-    // Listen for document preview from Android
     window.onDocumentPreview = (data: DocumentPreview) => {
       console.log('[Approval] Received preview, opening modal');
       setPreview(data);
+      setEditedImageBase64(data.imageBase64);
       setEditedData({});
       setIsEditing(false);
+      setIsEditingImage(false);
       setIsLoading(false);
-      setIsOpen(true);  // Open modal
+      setIsOpen(true);
     };
 
     window.onDocumentApproved = (response: any) => {
       console.log('[Approval] Document approved:', response);
       setIsLoading(false);
       setPreview(null);
-      setIsOpen(false);  // Close modal
+      setIsOpen(false);
     };
 
     window.onDocumentRejected = () => {
       console.log('[Approval] Document rejected');
       setIsLoading(false);
       setPreview(null);
-      setIsOpen(false);  // Close modal
+      setIsOpen(false);
     };
 
     window.onApprovalError = (error: any) => {
@@ -80,6 +84,15 @@ export function DocumentApprovalModal() {
       console.error('Android bridge not available');
       return;
     }
+    
+    // If image was edited, send the updated image
+    if (editedImageBase64 !== preview?.imageBase64) {
+      window.Android.editDocument(JSON.stringify({
+        ...editedData,
+        imageBase64: editedImageBase64
+      }));
+    }
+    
     setIsLoading(true);
     window.Android.approveDocument();
   };
@@ -116,6 +129,19 @@ export function DocumentApprovalModal() {
     setEditedData({});
   };
 
+  const handleImageEdit = () => {
+    setIsEditingImage(true);
+  };
+
+  const handleImageSave = (newBase64: string) => {
+    setEditedImageBase64(newBase64);
+    setIsEditingImage(false);
+  };
+
+  const handleImageCancel = () => {
+    setIsEditingImage(false);
+  };
+
   const handleClose = () => {
     if (!isLoading) {
       handleReject();
@@ -125,6 +151,25 @@ export function DocumentApprovalModal() {
   if (!preview) return null;
 
   const confidencePercent = Math.round((preview.confidence || 0) * 100);
+  const displayImageBase64 = editedImageBase64 || preview.imageBase64;
+
+  // Show image editor
+  if (isEditingImage) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-w-lg max-h-[95vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Image</DialogTitle>
+          </DialogHeader>
+          <ImageEditor
+            imageBase64={displayImageBase64}
+            onSave={handleImageSave}
+            onCancel={handleImageCancel}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -140,14 +185,30 @@ export function DocumentApprovalModal() {
           </DialogTitle>
         </DialogHeader>
 
-        {/* Image Preview */}
-        {preview.imageBase64 && (
-          <div className="relative w-full h-48 bg-muted rounded-lg overflow-hidden">
+        {/* Image Preview with Edit Button */}
+        {displayImageBase64 && (
+          <div className="relative w-full h-48 bg-muted rounded-lg overflow-hidden group">
             <img
-              src={`data:image/jpeg;base64,${preview.imageBase64}`}
+              src={`data:image/jpeg;base64,${displayImageBase64}`}
               alt="Document preview"
               className="w-full h-full object-contain"
             />
+            {/* Edit Image Button */}
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={handleImageEdit}
+            >
+              <Pencil className="h-4 w-4 mr-1" />
+              Edit Image
+            </Button>
+            {/* Show indicator if image was edited */}
+            {editedImageBase64 !== preview.imageBase64 && (
+              <div className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                Edited
+              </div>
+            )}
           </div>
         )}
 
