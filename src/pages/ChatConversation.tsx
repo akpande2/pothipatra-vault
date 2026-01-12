@@ -71,12 +71,16 @@ export default function ChatConversation() {
           documentType: doc.documentType,
           personName: doc.personName,
           idNumber: doc.idNumber,
-          dob: doc.dob
+          dob: doc.dob,
+          isValid: doc.isValid
         }))
       };
       
       setMessages(prev => [...prev, assistantMsg]);
       setIsSending(false);
+      if (response.askingRelationship && response.pendingPersonName) {
+        console.log('[CHAT] Asking relationship for:', response.pendingPersonName);
+      }
     };
 
     return () => {
