@@ -128,15 +128,7 @@ export function PersonView() {
   };
 
   const handlePersonClick = (personId: string) => {
-    if (expandedPerson === personId) {
-      setExpandedPerson(null);
-      setExpandedCategory(null);
-      setPersonDocuments({});
-    } else {
-      setExpandedPerson(personId);
-      setExpandedCategory(null);
-      loadPersonDocuments(personId);
-    }
+    navigate(`/person/${personId}`);  // Navigate to profile page
   };
 
   const handleCategoryClick = (categoryId: string) => {
