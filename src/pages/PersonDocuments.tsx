@@ -169,7 +169,7 @@ export default function PersonDocuments() {
           {/* Profile Card - Clickable */}
           <Card 
             className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => navigate(`/person/${id}/profile`)}
+            onClick={() => navigate(`/person/${person.id}`)}
           >
             <div className="flex items-center gap-4">
               {/* Avatar */}
