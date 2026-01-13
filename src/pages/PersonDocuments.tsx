@@ -79,6 +79,7 @@ export default function PersonDocuments() {
 
   const loadPersonData = (personId: string) => {
     setIsLoading(true);
+    console.log('[PersonDocs] Loading data for:', personId);
     
     // Load person
     if (window.Android?.getPersons) {
@@ -96,24 +97,30 @@ export default function PersonDocuments() {
     if (window.Android?.getProfile) {
       try {
         const json = window.Android.getProfile(personId);
+        console.log('[PersonDocs] Profile JSON:', json);
         const data = JSON.parse(json);
         if (data.personId) {
           setProfile(data);
         }
       } catch (e) {
-        console.error('Error loading profile:', e);
+        console.error('[PersonDocs] Error loading profile:', e);
       }
     }
 
     // Load documents for this person
     if (window.Android?.getDocumentsForPerson) {
       try {
+        console.log('[PersonDocs] Calling getDocumentsForPerson...');
         const json = window.Android.getDocumentsForPerson(personId);
+        console.log('[PersonDocs] Documents JSON:', json);
         const docs = JSON.parse(json);
+        console.log('[PersonDocs] Parsed documents:', docs.length);
         setDocuments(docs);
       } catch (e) {
-        console.error('Error loading documents:', e);
+        console.error('[PersonDocs] Error loading documents:', e);
       }
+    } else {
+      console.error('[PersonDocs] getDocumentsForPerson not available!');
     }
 
     setIsLoading(false);
