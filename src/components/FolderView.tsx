@@ -374,6 +374,14 @@ interface DocumentCardProps {
   onClick: () => void;
 }
 
+interface FolderViewProps {
+  searchQuery?: string;
+  viewMode?: 'grid' | 'list';
+  sortBy?: 'date' | 'type' | 'name';
+  sortOrder?: 'asc' | 'desc';
+  selectedType?: string | null;
+}
+
 function DocumentCard({ document, compact = false, onClick }: DocumentCardProps) {
   if (compact) {
     return (
