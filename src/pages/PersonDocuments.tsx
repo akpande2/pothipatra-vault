@@ -78,53 +78,57 @@ export default function PersonDocuments() {
   }, [id]);
 
   const loadPersonData = (personId: string) => {
-    setIsLoading(true);
-    console.log('[PersonDocs] Loading data for:', personId);
-    
-    // Load person
-    if (window.Android?.getPersons) {
-      try {
-        const json = window.Android.getPersons();
-        const persons = JSON.parse(json);
-        const found = persons.find((p: Person) => p.id === personId);
-        setPerson(found || null);
-      } catch (e) {
-        console.error('Error loading person:', e);
-      }
+  setIsLoading(true);
+  console.log('[PersonDocs] Loading data for:', personId);
+  
+  // Load person
+  if (window.Android?.getPersons) {
+    try {
+      const json = window.Android.getPersons();
+      const persons = JSON.parse(json || '[]');
+      const found = persons.find((p: any) => p?.id === personId);
+      console.log('[PersonDocs] Found person:', found);
+      setPerson(found || null);
+    } catch (e) {
+      console.error('[PersonDocs] Error loading person:', e);
     }
+  }
 
-    // Load profile
-    if (window.Android?.getProfile) {
-      try {
-        const json = window.Android.getProfile(personId);
-        console.log('[PersonDocs] Profile JSON:', json);
+  // Load profile
+  if (window.Android?.getProfile) {
+    try {
+      const json = window.Android.getProfile(personId);
+      console.log('[PersonDocs] Profile JSON:', json);
+      if (json && json !== '{}') {
         const data = JSON.parse(json);
-        if (data.personId) {
-          setProfile(data);
-        }
-      } catch (e) {
-        console.error('[PersonDocs] Error loading profile:', e);
+        if (data?.personId) setProfile(data);
       }
+    } catch (e) {
+      console.error('[PersonDocs] Error loading profile:', e);
     }
+  }
 
-    // Load documents for this person
-    if (window.Android?.getDocumentsForPerson) {
-      try {
-        console.log('[PersonDocs] Calling getDocumentsForPerson...');
-        const json = window.Android.getDocumentsForPerson(personId);
-        console.log('[PersonDocs] Documents JSON:', json);
+  // Load documents
+  if (window.Android?.getDocumentsForPerson) {
+    try {
+      console.log('[PersonDocs] Calling getDocumentsForPerson...');
+      const json = window.Android.getDocumentsForPerson(personId);
+      console.log('[PersonDocs] Documents JSON:', json);
+      if (json) {
         const docs = JSON.parse(json);
-        console.log('[PersonDocs] Parsed documents:', docs.length);
-        setDocuments(docs);
-      } catch (e) {
-        console.error('[PersonDocs] Error loading documents:', e);
+        console.log('[PersonDocs] Parsed documents:', docs?.length || 0);
+        setDocuments(docs || []);
       }
-    } else {
-      console.error('[PersonDocs] getDocumentsForPerson not available!');
+    } catch (e) {
+      console.error('[PersonDocs] Error loading documents:', e);
+      setDocuments([]);
     }
+  } else {
+    console.error('[PersonDocs] getDocumentsForPerson not available!');
+  }
 
-    setIsLoading(false);
-  };
+  setIsLoading(false);
+};
 
   // Group documents by category
   const groupedDocs = documents.reduce((acc, doc) => {
@@ -168,9 +172,12 @@ export default function PersonDocuments() {
           
           {/* Profile Card - Clickable */}
           <Card 
-            className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => navigate(`/person/${person.id}`)}
-          >
+            className="p-4 cursor-pointer hover:bg-accent/50 transition-colors active:bg-accent"
+            onClick={() => {
+              console.log('[PersonDocs] Navigating to profile:', id);
+              navigate(`/person/${id}/profile`);
+            }}
+            >
             <div className="flex items-center gap-4">
               {/* Avatar */}
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
