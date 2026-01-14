@@ -1,18 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { LanguageProvider } from "@/hooks/useLanguage";
+import { useNativeBridge } from "@/hooks/useNativeBridge";
+import { BottomNav } from "@/components/BottomNav";
+import { DocumentApprovalModal } from '@/components/DocumentApprovalModal';
+import { DocumentViewModal } from '@/components/DocumentViewModal';
 
-// Import pages (adjust paths as needed)
-import Index from './pages/Index';
-import Documents from './pages/Documents';
-import Chat from './pages/Chat';
-import PersonDocuments from './pages/PersonDocuments';
-import PersonProfilePage from './pages/PersonProfilePage';
-import NotFound from './pages/NotFound';
+// Pages
+import Index from "./pages/Index";
+import Settings from "./pages/Settings";
+import NotFound from "./pages/NotFound";
+import Splash from "./pages/Splash";
+import Dashboard from "./pages/Dashboard";
+import IDCards from "./pages/IDCards";
+import UploadID from "./pages/UploadID";
+import ChatHistory from "./pages/ChatHistory";
+import ChatConversation from "./pages/ChatConversation";
+import PrivacyTrust from "./pages/PrivacyTrust";
+import Reminders from "./pages/Reminders";
+import NotificationSettings from "./pages/NotificationSettings";
+import About from "./pages/About";
+import Documents from "@/pages/Documents";
+import DocumentDetail from "@/pages/DocumentDetail";
+import PersonProfilePage from '@/pages/PersonProfile';
+import PersonDocuments from '@/pages/PersonDocuments';
 
-// Import components
-import { DocumentScannerModal } from './components/DocumentScannerModal';
-import { PermissionRequestModal } from './components/PermissionRequestModal';
+// New Components for Document Scanner
+import { DocumentScannerModal } from '@/components/DocumentScannerModal';
+
+const queryClient = new QueryClient();
 
 // ============================================================================
 // PERMISSION REQUEST MODAL
@@ -24,7 +44,7 @@ interface PermissionRequestModalProps {
   onSkip: () => void;
 }
 
-export const PermissionRequestModal: React.FC<PermissionRequestModalProps> = ({
+const PermissionRequestModal: React.FC<PermissionRequestModalProps> = ({
   isOpen,
   onGranted,
   onSkip
@@ -50,6 +70,9 @@ export const PermissionRequestModal: React.FC<PermissionRequestModalProps> = ({
       } catch (e) {
         console.error('Error checking permissions:', e);
       }
+    } else {
+      // If method doesn't exist, assume permissions are granted
+      onGranted();
     }
   };
 
@@ -81,6 +104,9 @@ export const PermissionRequestModal: React.FC<PermissionRequestModalProps> = ({
         setIsRequesting(false);
         checkPermissions();
       }, 30000);
+    } else {
+      setIsRequesting(false);
+      onGranted();
     }
   };
 
@@ -151,23 +177,36 @@ export const PermissionRequestModal: React.FC<PermissionRequestModalProps> = ({
 };
 
 // ============================================================================
-// APP COMPONENT
+// APP CONTENT - Main app with routing and scanning logic
 // ============================================================================
 
-const App: React.FC = () => {
-  const [appState, setAppState] = useState<'loading' | 'permissions' | 'scanning' | 'ready'>('loading');
+const AppContent = () => {
+  useNativeBridge(); // Start listening for Android messages
+  
+  const [appState, setAppState] = useState<'loading' | 'permissions' | 'scanning' | 'ready'>('ready');
   const [showScanner, setShowScanner] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    initializeApp();
-  }, []);
+    if (!initialized) {
+      initializeApp();
+      setInitialized(true);
+    }
+  }, [initialized]);
 
   const initializeApp = async () => {
     console.log('[App] Initializing...');
     
     // Check if running in Android WebView
     if (!window.Android) {
-      console.log('[App] Not in Android WebView, skipping initialization');
+      console.log('[App] Not in Android WebView, skipping scan initialization');
+      setAppState('ready');
+      return;
+    }
+
+    // Check if the new permission/scanning methods exist
+    if (!window.Android.getPermissionStatus && !window.Android.shouldScanDevice) {
+      console.log('[App] New scanning methods not available, using existing flow');
       setAppState('ready');
       return;
     }
@@ -248,85 +287,80 @@ const App: React.FC = () => {
     setAppState('ready');
   };
 
-  // Loading state
-  if (appState === 'loading') {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        {/* Permission Request Modal */}
-        <PermissionRequestModal
-          isOpen={appState === 'permissions'}
-          onGranted={handlePermissionsGranted}
-          onSkip={handlePermissionsSkipped}
-        />
+    <>
+      {/* Permission Request Modal */}
+      <PermissionRequestModal
+        isOpen={appState === 'permissions'}
+        onGranted={handlePermissionsGranted}
+        onSkip={handlePermissionsSkipped}
+      />
 
-        {/* Document Scanner Modal */}
+      {/* Document Scanner Modal - Only render if component exists */}
+      {showScanner && (
         <DocumentScannerModal
           isOpen={showScanner}
           onClose={handleScannerClose}
           onComplete={handleScannerComplete}
         />
+      )}
 
-        {/* Main App Routes */}
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/documents" element={<Documents />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/person/:id" element={<PersonDocuments />} />
-          <Route path="/person/:id/profile" element={<PersonProfilePage />} />
-          <Route path="/404" element={<NotFound />} />
-          <Route path="*" element={<Navigate to="/404" replace />} />
-        </Routes>
-
-        {/* Toast notifications */}
-        <Toaster position="top-center" richColors />
-      </div>
-    </Router>
+      {/* Main App Routes */}
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/id-cards" element={<IDCards />} />
+        <Route path="/upload" element={<UploadID />} />
+        <Route path="/chat-history" element={<ChatHistory />} />
+        <Route path="/chat/:id" element={<ChatConversation />} />
+        <Route path="/privacy" element={<PrivacyTrust />} />
+        <Route path="/reminders" element={<Reminders />} />
+        <Route path="/notifications" element={<NotificationSettings />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/documents" element={<Documents />} />
+        <Route path="/document/:id" element={<DocumentDetail />} />
+        <Route path="/person/:id" element={<PersonDocuments />} />
+        <Route path="/person/:id/profile" element={<PersonProfilePage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      
+      {/* Bottom Navigation */}
+      <BottomNav />
+    </>
   );
 };
 
 // ============================================================================
-// WINDOW TYPE EXTENSION
+// MAIN APP - Providers wrapper
+// ============================================================================
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <DocumentApprovalModal />
+        <DocumentViewModal />
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </TooltipProvider>
+    </LanguageProvider>
+  </QueryClientProvider>
+);
+
+export default App;
+
+// ============================================================================
+// WINDOW TYPE EXTENSION - Add to existing declarations or create new file
 // ============================================================================
 
 declare global {
   interface Window {
     Android?: {
-      // Permissions
-      getPermissionStatus: () => string;
-      requestAllPermissions: () => void;
-      
-      // Device Scanning
-      shouldScanDevice: () => boolean;
-      scanDeviceForDocuments: () => string;
-      getNextDocumentBatch: () => string;
-      dismissFoundDocument: (filePath: string) => void;
-      importFoundDocument: (documentJson: string) => string;
-      
-      // Document V2
-      getAllDocumentsV2: () => string;
-      getDocumentDetailsV2: (documentId: string) => string;
-      getDocumentPageImage: (documentId: string, pageNumber: number) => string;
-      searchDocumentsV2: (query: string) => string;
-      deleteDocumentV2: (documentId: string) => boolean;
-      getStorageStats: () => string;
-      
-      // Scan Settings
-      setScanEnabled: (enabled: boolean) => void;
-      isScanEnabled: () => boolean;
-      getScanStats: () => string;
-      
-      // Existing methods...
+      // Existing methods
       getAllIDs: () => string;
       getDocumentImage: (id: string) => string;
       deleteID: (id: string) => boolean;
@@ -337,9 +371,32 @@ declare global {
       approveDocument: (dataJson: string) => void;
       rejectDocument: () => void;
       sendChatMessage: (message: string) => void;
-      // ... other existing methods
+      saveProfile: (profileJson: string) => boolean;
+      linkDocumentToPerson: (personId: string, documentId: string) => void;
+      
+      // NEW: Permissions
+      getPermissionStatus?: () => string;
+      requestAllPermissions?: () => void;
+      
+      // NEW: Device Scanning
+      shouldScanDevice?: () => boolean;
+      scanDeviceForDocuments?: () => string;
+      getNextDocumentBatch?: () => string;
+      dismissFoundDocument?: (filePath: string) => void;
+      importFoundDocument?: (documentJson: string) => string;
+      
+      // NEW: Document V2
+      getAllDocumentsV2?: () => string;
+      getDocumentDetailsV2?: (documentId: string) => string;
+      getDocumentPageImage?: (documentId: string, pageNumber: number) => string;
+      searchDocumentsV2?: (query: string) => string;
+      deleteDocumentV2?: (documentId: string) => boolean;
+      getStorageStats?: () => string;
+      
+      // NEW: Scan Settings
+      setScanEnabled?: (enabled: boolean) => void;
+      isScanEnabled?: () => boolean;
+      getScanStats?: () => string;
     };
   }
 }
-
-export default App;
