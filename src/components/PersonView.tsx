@@ -36,6 +36,10 @@ interface Document {
   summary: string;
 }
 
+interface PersonViewProps {
+  searchQuery?: string;
+}
+
 interface GroupedDocuments {
   [category: string]: {
     categoryDisplay: string;
