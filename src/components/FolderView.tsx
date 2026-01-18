@@ -150,9 +150,20 @@ export function FolderView({
     try {
       let success = false;
       
-      if (window.Android?.deleteID) {
+      console.log('[FolderView] Deleting document:', docId);
+      
+      // Try deleteDocument first (standard method), then deleteID as fallback
+      if (window.Android?.deleteDocument) {
+        console.log('[FolderView] Using deleteDocument');
+        success = window.Android.deleteDocument(docId);
+      } else if (window.Android?.deleteID) {
+        console.log('[FolderView] Using deleteID (fallback)');
         success = window.Android.deleteID(docId);
+      } else {
+        console.error('[FolderView] No delete method available on Android bridge');
       }
+      
+      console.log('[FolderView] Delete result:', success);
       
       if (success) {
         setDocuments(prev => prev.filter(d => d.id !== docId));
