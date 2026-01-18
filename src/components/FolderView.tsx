@@ -74,6 +74,8 @@ export function FolderView({
 
   // Filter and sort documents
   useEffect(() => {
+    console.log('[FolderView] Filtering - documents:', documents.length, 'searchQuery:', searchQuery, 'selectedType:', selectedType);
+    
     let filtered = [...documents];
     
     // Search filter
@@ -84,11 +86,13 @@ export function FolderView({
         doc.idNumber?.toLowerCase().includes(query) ||
         doc.docType?.toLowerCase().includes(query)
       );
+      console.log('[FolderView] After search filter:', filtered.length);
     }
     
     // Type filter
     if (selectedType) {
       filtered = filtered.filter(doc => doc.docType === selectedType);
+      console.log('[FolderView] After type filter:', filtered.length);
     }
     
     // Sort
@@ -110,6 +114,7 @@ export function FolderView({
       return sortOrder === 'asc' ? comparison : -comparison;
     });
     
+    console.log('[FolderView] Final filtered count:', filtered.length);
     setFilteredDocs(filtered);
   }, [documents, searchQuery, selectedType, sortBy, sortOrder]);
 
@@ -119,8 +124,14 @@ export function FolderView({
     try {
       if (window.Android?.getAllIDs) {
         const json = window.Android.getAllIDs();
+        console.log('[FolderView] Raw JSON length:', json?.length);
+        
         const rawDocs = JSON.parse(json || '[]');
-        console.log('[FolderView] Raw documents:', rawDocs);
+        console.log('[FolderView] Parsed documents count:', rawDocs.length);
+        
+        if (rawDocs.length > 0) {
+          console.log('[FolderView] First doc sample:', JSON.stringify(rawDocs[0]));
+        }
         
         // Map to expected format - handle both old and new formats
         const docs: DocumentItem[] = rawDocs.map((doc: any) => ({
@@ -136,7 +147,13 @@ export function FolderView({
         }));
         
         console.log('[FolderView] Mapped documents:', docs.length);
+        if (docs.length > 0) {
+          console.log('[FolderView] First mapped doc:', JSON.stringify(docs[0]));
+        }
+        
         setDocuments(docs);
+      } else {
+        console.error('[FolderView] Android.getAllIDs not available');
       }
     } catch (e) {
       console.error('[FolderView] Error loading:', e);
@@ -180,8 +197,15 @@ export function FolderView({
   };
 
   const handleViewDocument = (docId: string) => {
-    // Dispatch event to open document viewer
-    window.dispatchEvent(new CustomEvent('viewDocument', { detail: { documentId: docId } }));
+    console.log('[FolderView] Opening document:', docId);
+    
+    // Call Android bridge to view document
+    if (window.Android?.viewDocument) {
+      window.Android.viewDocument(docId);
+    } else {
+      // Fallback: dispatch event for web-based viewer
+      window.dispatchEvent(new CustomEvent('viewDocument', { detail: { documentId: docId } }));
+    }
   };
 
   const formatDate = (timestamp: number): string => {
