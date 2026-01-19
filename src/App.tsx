@@ -354,7 +354,7 @@ const App = () => (
 export default App;
 
 // ============================================================================
-// WINDOW TYPE EXTENSION - Add to existing declarations or create new file
+// WINDOW TYPE EXTENSION
 // ============================================================================
 
 declare global {
@@ -364,28 +364,49 @@ declare global {
       getAllIDs: () => string;
       getDocumentImage: (id: string) => string;
       deleteID: (id: string) => boolean;
+      deleteDocument: (id: string) => boolean;
+      viewDocument: (id: string) => void;
       getPersons: () => string;
       getProfile: (personId: string) => string;
       getDocumentsForPerson: (personId: string) => string;
       startScanner: () => void;
+      openScanner: () => void;
+      openGallery: () => void;
       approveDocument: (dataJson: string) => void;
       rejectDocument: () => void;
       sendChatMessage: (message: string) => void;
       saveProfile: (profileJson: string) => boolean;
       linkDocumentToPerson: (personId: string, documentId: string) => void;
       
-      // NEW: Permissions
+      // Permissions
       getPermissionStatus?: () => string;
       requestAllPermissions?: () => void;
       
-      // NEW: Device Scanning
+      // Device Scanning
       shouldScanDevice?: () => boolean;
       scanDeviceForDocuments?: () => string;
       getNextDocumentBatch?: () => string;
       dismissFoundDocument?: (filePath: string) => void;
       importFoundDocument?: (documentJson: string) => string;
       
-      // NEW: Document V2
+      // Onboarding
+      isOnboardingComplete?: () => boolean;
+      setOnboardingComplete?: (complete: boolean) => void;
+      createPrimaryUser?: (userJson: string) => string;
+      createFamilyMember?: (memberJson: string) => string;
+      getPrimaryUser?: () => string;
+      
+      // Security
+      getSecurityStatus?: () => string;
+      setupPin?: (pin: string) => boolean;
+      verifyPin?: (pin: string) => boolean;
+      isPinEnabled?: () => boolean;
+      isBiometricAvailable?: () => boolean;
+      enableBiometric?: (enabled: boolean) => void;
+      shouldLockApp?: () => boolean;
+      markSessionActive?: () => void;
+      
+      // Document V2
       getAllDocumentsV2?: () => string;
       getDocumentDetailsV2?: (documentId: string) => string;
       getDocumentPageImage?: (documentId: string, pageNumber: number) => string;
@@ -393,7 +414,7 @@ declare global {
       deleteDocumentV2?: (documentId: string) => boolean;
       getStorageStats?: () => string;
       
-      // NEW: Scan Settings
+      // Scan Settings
       setScanEnabled?: (enabled: boolean) => void;
       isScanEnabled?: () => boolean;
       getScanStats?: () => string;
